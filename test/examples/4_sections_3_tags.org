@@ -1,0 +1,4 @@
+* This is a root section                                            :support:
+* Root section no2                                             :support:help:
+* Root section no3                                         :help:development:
+* Root section no4                                                     :help:

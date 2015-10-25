@@ -1,0 +1,6 @@
+* This is a root section                                            :support:
+  CLOCK: [2015-10-18 Sun 12:10]--[2015-10-18 Sun 12:30] =>  0:20
+* Root section no2                                             :support:help:
+* Root section no3                                         :help:development:
+* Root section no4                                                     :help:
+  CLOCK: [2015-10-18 Sun 08:10]--[2015-10-18 Sun 09:00] =>  0:50

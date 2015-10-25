@@ -1,0 +1,93 @@
+name:                orgmode-database
+version:             0.1.0
+license:             BSD3
+license-file:        LICENSE
+author:              Richard Zetterberg
+maintainer:          richard.zetterberg@googlemail.com
+category:            Database
+build-type:          Simple
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs: lib
+
+  exposed-modules: Database.OrgMode
+                 , Database.OrgMode.Model
+                 , Database.OrgMode.Model.Clock
+                 , Database.OrgMode.Model.Document
+                 , Database.OrgMode.Model.Heading
+                 , Database.OrgMode.Model.Section
+                 , Database.OrgMode.Model.Tag
+                 , Database.OrgMode.Marshall
+                 , Database.OrgMode.Import
+
+  ghc-options:
+        -Wall -Werror
+
+  default-extensions: CPP
+                      DeriveDataTypeable
+                      EmptyDataDecls
+                      FlexibleContexts
+                      FlexibleInstances
+                      GADTs
+                      GeneralizedNewtypeDeriving
+                      MultiParamTypeClasses
+                      NoImplicitPrelude
+                      NoMonomorphismRestriction
+                      OverloadedStrings
+                      QuasiQuotes
+                      Rank2Types
+                      RecordWildCards
+                      ScopedTypeVariables
+                      TemplateHaskell
+                      TupleSections
+                      TypeFamilies
+                      ViewPatterns
+
+  build-depends: base
+               , attoparsec
+               , bytestring
+               , monad-control
+               , monad-logger
+               , orgmode-parse
+               , persistent
+               , persistent-template
+               , text
+               , time
+               , transformers
+               , resourcet
+               , esqueleto
+               , mtl
+
+  default-language:    Haskell2010
+
+test-suite test
+  type:           exitcode-stdio-1.0
+  main-is:        Spec.hs
+  hs-source-dirs: test
+
+  ghc-options:
+        -Wall -Werror
+
+  default-extensions: FlexibleContexts
+                      OverloadedStrings
+                      Rank2Types
+                      KindSignatures
+
+  build-depends: orgmode-database
+               , base
+               , hspec
+               , text
+               , directory
+               , transformers
+               , resourcet
+               , monad-logger
+               , monad-control
+               , persistent-sqlite
+               , mtl
+               , time
+               , orgmode-parse
+               , unordered-containers
+               , attoparsec
+
+  default-language:    Haskell2010
