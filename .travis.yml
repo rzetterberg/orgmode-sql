@@ -2,6 +2,14 @@ language: c
 
 sudo: false
 
+cache:
+  directories:
+    - $HOME/.cabal/packages
+
+before_cache:
+  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
+  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/00-index.tar
+
 matrix:
   include:
     - env: CABALVER=1.22 GHCVER=7.10.1
@@ -16,8 +24,7 @@ before_install:
  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 
 install:
-  - cabal update
-  - cabal sandbox init
+  - travis_retry cabal update
   - cabal install --only-dependencies --enable-tests
 
 script:
