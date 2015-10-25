@@ -1,20 +1,26 @@
-# Using hvr's multi-ghc-travis template and ppa. Thanks hvr!!
+language: c
 
-env:
-   - GHCVER=7.10.2
+sudo: false
+
+matrix:
+  include:
+    - env: CABALVER=1.22 GHCVER=7.10.1
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.1],sources: [hvr-ghc]}}
+    - env: CABALVER=head GHCVER=head
+      addons: {apt: {packages: [cabal-install-head,ghc-head],  sources: [hvr-ghc]}}
+
+  allow_failures:
+   - env: CABALVER=head GHCVER=head
 
 before_install:
-   - sudo add-apt-repository -y ppa:hvr/ghc
-   - sudo apt-get update
-   - sudo apt-get install cabal-install-1.22 ghc-$GHCVER alex happy
-   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.22/bin:$PATH
+ - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 
 install:
-  - cabal-1.22 update
-  - cabal-1.22 sandbox init
-  - cabal-1.22 install --only-dependencies --enable-tests
+  - cabal update
+  - cabal sandbox init
+  - cabal install --only-dependencies --enable-tests
 
 script:
-  - cabal-1.22 configure --enable-tests -v2
-  - cabal-1.22 build
-  - cabal-1.22 test
+  - cabal configure --enable-tests -v2
+  - cabal build
+  - cabal test
