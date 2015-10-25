@@ -3,7 +3,7 @@ CRUD functionality for 'Tag's.
 -}
 module Database.OrgMode.Model.Tag where
 
-import qualified Database.Persist as P
+import           Database.Persist
 
 import           Database.OrgMode.Import
 import           Database.OrgMode.Model
@@ -23,12 +23,12 @@ add :: (MonadIO m) => Key Heading -> Text -> ReaderT SqlBackend m (Key Tag)
 add headingId tagName = do
     currId <- getBy (UniqueTag tagName) >>= getCurrId
 
-    void $ P.insert (TagRel headingId currId)
+    void $ insert (TagRel headingId currId)
 
     return currId
   where
     getCurrId (Just (Entity currId _ )) = return currId
-    getCurrId Nothing                   = P.insert (Tag tagName)
+    getCurrId Nothing                   = insert (Tag tagName)
 
 -------------------------------------------------------------------------------
 -- * Retrieval
@@ -39,4 +39,4 @@ Retrieves all 'Tag's found in the database.
 ASC sorted by name.
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Tag]
-getAll = P.selectList [] [P.Asc TagName]
+getAll = selectList [] [Asc TagName]

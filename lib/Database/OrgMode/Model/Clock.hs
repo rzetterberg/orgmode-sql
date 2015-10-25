@@ -3,7 +3,7 @@ CRUD functionality for 'Document's.
 -}
 module Database.OrgMode.Model.Clock where
 
-import qualified Database.Persist as P
+import           Database.Persist
 
 import           Database.OrgMode.Import
 import           Database.OrgMode.Model
@@ -16,7 +16,7 @@ Adds the given 'Document' into the database. Simply a wrapper for persists'
 'insert' function.
 -}
 add :: (MonadIO m) => Clock -> ReaderT SqlBackend m (Key Clock)
-add = P.insert
+add = insert
 
 -------------------------------------------------------------------------------
 -- * Retrieval
@@ -27,7 +27,7 @@ Retrieves all 'Document's in the database.
 No sorting
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Clock]
-getAll = P.selectList [] []
+getAll = selectList [] []
 
 {-|
 Retrieves all clocks in the database and sums up all durations to produce the

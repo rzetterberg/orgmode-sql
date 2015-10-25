@@ -3,7 +3,7 @@ CRUD functionality for 'Section's.
 -}
 module Database.OrgMode.Model.Section where
 
-import qualified Database.Persist as P
+import           Database.Persist
 
 import           Database.OrgMode.Import
 import           Database.OrgMode.Model
@@ -16,7 +16,7 @@ Adds the given 'Section' into the database. Simply a wrapper for persists'
 'insert' function.
 -}
 add :: (MonadIO m) => Section -> ReaderT SqlBackend m (Key Section)
-add = P.insert
+add = insert
 
 -------------------------------------------------------------------------------
 -- * Retrieval
@@ -27,4 +27,4 @@ Retrieves all 'Section's in the database.
 No sorting
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Section]
-getAll = P.selectList [] []
+getAll = selectList [] []

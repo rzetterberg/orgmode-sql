@@ -11,6 +11,6 @@ import           Control.Monad.IO.Class      as Import (MonadIO, liftIO)
 import           Control.Monad.Reader        as Import (ReaderT)
 import           Data.Text                   as Import (Text)
 import           Data.Time.Clock             as Import (UTCTime)
-import           Database.Esqueleto          as Import
 import           Database.Persist.TH         as Import
+import           Database.Persist.Sql        as Import (SqlBackend, Key(..))
 import           Prelude                     as Import

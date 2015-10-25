@@ -1,4 +1,4 @@
-name:                orgmode-database
+name:                orgmode-sql
 version:             0.1.0
 license:             BSD3
 license-file:        LICENSE
@@ -7,6 +7,12 @@ maintainer:          richard.zetterberg@googlemail.com
 category:            Database
 build-type:          Simple
 cabal-version:       >=1.10
+synopsis:            Library for creating SQL databases from org-mode data
+description:
+  <<https://travis-ci.org/rzetterberg/orgmode-sql.svg?branch=master>>
+  .
+  `orgmode-sql` is a library that convert org-mode data parsed with
+  orgmode-parse into SQL databases using persistent.
 
 library
   hs-source-dirs: lib
@@ -22,7 +28,7 @@ library
                  , Database.OrgMode.Import
 
   ghc-options:
-        -Wall -Werror
+        -Wall
 
   default-extensions: CPP
                       DeriveDataTypeable
@@ -44,20 +50,15 @@ library
                       TypeFamilies
                       ViewPatterns
 
-  build-depends: base
-               , attoparsec
-               , bytestring
-               , monad-control
-               , monad-logger
-               , orgmode-parse
-               , persistent
-               , persistent-template
-               , text
+  build-depends: base                    >= 4.4 && < 5.0
+               , mtl                     >= 2.2 && < 2.3
+               , orgmode-parse           >= 0.1 && < 0.2
+               , persistent              >= 2.2 && < 2.3
+               , persistent-template     >= 2.1 && < 2.2
+               , resourcet               >= 1.1 && < 1.2
+               , text                    >= 1.2 && < 1.3
                , time
                , transformers
-               , resourcet
-               , esqueleto
-               , mtl
 
   default-language:    Haskell2010
 
@@ -67,27 +68,33 @@ test-suite test
   hs-source-dirs: test
 
   ghc-options:
-        -Wall -Werror
+        -Wall
 
   default-extensions: FlexibleContexts
                       OverloadedStrings
                       Rank2Types
                       KindSignatures
 
-  build-depends: orgmode-database
-               , base
-               , hspec
-               , text
+  build-depends: base                    >= 4.4  && < 5.0
+               , attoparsec              >= 0.12 && < 0.13
+               , hspec                   >= 2.1  && < 2.2
+               , monad-control           >= 1.0  && < 1.1
+               , monad-logger            >= 0.3  && < 0.4
+               , mtl                     >= 2.2  && < 2.3
+               , orgmode-parse           >= 0.1  && < 0.2
+               , persistent              >= 2.2  && < 2.3
+               , persistent-sqlite       >= 2.2  && < 2.3
+               , persistent-template     >= 2.1  && < 2.2
+               , resourcet               >= 1.1  && < 1.2
+               , text                    >= 1.2  && < 1.3
+               , unordered-containers    >= 0.2  && < 0.3
                , directory
-               , transformers
-               , resourcet
-               , monad-logger
-               , monad-control
-               , persistent-sqlite
-               , mtl
+               , orgmode-sql
                , time
-               , orgmode-parse
-               , unordered-containers
-               , attoparsec
+               , transformers
 
   default-language:    Haskell2010
+
+source-repository head
+  type:                 git
+  location:             https://github.com/rzetterberg/orgmode-sql
