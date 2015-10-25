@@ -1,5 +1,7 @@
 # orgmode-sql
 
+![Travis status](https://api.travis-ci.org/rzetterberg/orgmode-sql.svg)
+
 A [Haskell](https://www.haskell.org/) library that takes [org-mode](http://orgmode.org/)
 documents parsed with [orgmode-parse](https://hackage.haskell.org/package/orgmode-parse),
 converts the data into a relational model and insert it into a SQL database
