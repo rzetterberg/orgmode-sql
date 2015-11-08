@@ -25,10 +25,10 @@ add = P.insert
 {-|
 Retrieves all 'Document's in the database.
 
-No sorting
+ASC sorted by clock start.
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Clock]
-getAll = P.selectList [] []
+getAll = P.selectList [] [P.Asc ClockStart]
 
 {-|
 Retrieves all clocks in the database and sums up all durations to produce the
