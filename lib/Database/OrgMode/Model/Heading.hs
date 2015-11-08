@@ -39,9 +39,10 @@ getByTag :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Heading]
 getByTag tagName =
     select $
         from $ \(heading, rel, tag) -> do
-            where_ (tag ^. TagName ==. val tagName)
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (tag     ^. TagName    ==. val tagName)
+            where_ (rel     ^. TagRelItem ==. tag ^. TagId)
+            where_ (heading ^. HeadingId  ==. rel ^. TagRelOwner)
+
             orderBy [asc (heading ^. HeadingTitle)]
 
             return heading

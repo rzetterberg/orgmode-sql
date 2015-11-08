@@ -51,10 +51,11 @@ getByDocumentName :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Tag]
 getByDocumentName docName =
     select $
         from $ \(doc, heading, rel, tag) -> do
-            where_ (doc ^. DocumentName ==. val docName)
-            where_ (doc ^. DocumentId ==. heading ^. HeadingDocument)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (doc     ^. DocumentName ==. val docName)
+            where_ (doc     ^. DocumentId   ==. heading ^. HeadingDocument)
+            where_ (heading ^. HeadingId    ==. rel     ^. TagRelOwner)
+            where_ (rel     ^. TagRelItem   ==. tag     ^. TagId)
+
             orderBy [asc (tag ^. TagName)]
 
             return tag
@@ -69,7 +70,8 @@ getByHeading headingId =
     select $
         from $ \(tag, rel) -> do
             where_ (rel ^. TagRelOwner ==. val headingId)
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (rel ^. TagRelItem  ==. tag ^. TagId)
+
             orderBy [asc (tag ^. TagName)]
 
             return tag

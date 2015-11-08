@@ -52,8 +52,8 @@ getByHeading :: (MonadIO m) => Key Heading -> ReaderT SqlBackend m [Entity Clock
 getByHeading headingId =
     select $
         from $ \(heading, clock) -> do
-            where_ (heading ^. HeadingId ==. val headingId)
-            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            where_ (heading ^. HeadingId  ==. val headingId)
+            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
@@ -67,10 +67,10 @@ getByTag :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Clock]
 getByTag tagName =
     select $
         from $ \(clock, heading, rel, tag) -> do
-            where_ (tag ^. TagName ==. val tagName)
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
-            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            where_ (tag     ^. TagName    ==. val tagName)
+            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
+            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
+            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
@@ -87,9 +87,9 @@ getTagTotal =
             let tname = tag ^. TagName
                 total = sum_ (clock ^. ClockDuration)
 
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
-            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
+            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
+            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
 
             groupBy tname
             orderBy [desc total]
@@ -108,9 +108,9 @@ getHeadingTotal =
             let hname = heading ^. HeadingTitle
                 total = sum_ (clock ^. ClockDuration)
 
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
-            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
+            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
+            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
 
             groupBy hname
             orderBy [desc total]
@@ -129,10 +129,10 @@ getDocumentTotal =
             let dname = doc ^. DocumentName
                 total = sum_ (clock ^. ClockDuration)
 
-            where_ (doc ^. DocumentId ==. heading ^. HeadingDocument)
-            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
-            where_ (rel ^. TagRelItem ==. tag ^. TagId)
-            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            where_ (doc     ^. DocumentId ==. heading ^. HeadingDocument)
+            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
+            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
+            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
 
             groupBy dname
             orderBy [desc total]
