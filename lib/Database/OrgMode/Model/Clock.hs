@@ -74,3 +74,45 @@ getByTag tagName =
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
+
+{-|
+Retrieves total duration for each 'Tag'
+
+DESC sorted by total duration
+-}
+getTagTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
+getTagTotal =
+    select $
+        from $ \(clock, tag, rel, heading) -> do
+            let tname = tag ^. TagName
+                total = sum_ (clock ^. ClockDuration)
+
+            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+
+            groupBy tname
+            orderBy [desc total]
+
+            return (tname, total)
+
+{-|
+Retrieves total duration for each 'Heading'
+
+DESC sorted by total duration
+-}
+getHeadingTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
+getHeadingTotal =
+    select $
+        from $ \(clock, tag, rel, heading) -> do
+            let hname = heading ^. HeadingTitle
+                total = sum_ (clock ^. ClockDuration)
+
+            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+
+            groupBy hname
+            orderBy [desc total]
+
+            return (hname, total)
