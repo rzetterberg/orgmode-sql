@@ -82,9 +82,9 @@ Retrieves total duration for each 'Tag'
 
 DESC sorted by total duration
 -}
-getTagTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
-getTagTotal =
-    select $
+getTagTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
+getTagTotal = do
+    res <- select $
         from $ \(clock, tag, rel, heading) -> do
             let tname = tag ^. TagName
                 total = sum_ (clock ^. ClockDuration)
@@ -98,14 +98,18 @@ getTagTotal =
 
             return (tname, total)
 
+    return $ map prepare res
+  where
+    prepare (Value n, Value totM) = (n, maybe 0 id totM)
+
 {-|
 Retrieves total duration for each 'Heading'
 
 DESC sorted by total duration
 -}
-getHeadingTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
-getHeadingTotal =
-    select $
+getHeadingTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
+getHeadingTotal = do
+    res <- select $
         from $ \(clock, tag, rel, heading) -> do
             let hname = heading ^. HeadingTitle
                 total = sum_ (clock ^. ClockDuration)
@@ -119,14 +123,18 @@ getHeadingTotal =
 
             return (hname, total)
 
+    return $ map prepare res
+  where
+    prepare (Value n, Value totM) = (n, maybe 0 id totM)
+
 {-|
 Retrieves total duration for each 'Document'
 
 DESC sorted by total duration
 -}
-getDocumentTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
-getDocumentTotal =
-    select $
+getDocumentTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
+getDocumentTotal = do
+    res <- select $
         from $ \(doc, clock, tag, rel, heading) -> do
             let dname = doc ^. DocumentName
                 total = sum_ (clock ^. ClockDuration)
@@ -140,3 +148,7 @@ getDocumentTotal =
             orderBy [desc total]
 
             return (dname, total)
+
+    return $ map prepare res
+  where
+    prepare (Value n, Value totM) = (n, maybe 0 id totM)

@@ -92,8 +92,6 @@ spec = do
 
               Clock.getTagTotal
 
-          liftIO $ print totals
-
           (length totals) `shouldBe` 3
   describe "getHeadingTotal" $ do
       it "separate docs, 1 heading, 1 tag" $ do
@@ -120,8 +118,6 @@ spec = do
 
               Clock.getHeadingTotal
 
-          liftIO $ print totals
-
           (length totals) `shouldBe` 2
   describe "getDocumentTotal" $ do
       it "separate docs, 1 heading, 1 tag" $ do
@@ -147,7 +143,5 @@ spec = do
               void $ Tag.add hedId2 "tag3"
 
               Clock.getDocumentTotal
-
-          liftIO $ print totals
 
           (length totals) `shouldBe` 2
