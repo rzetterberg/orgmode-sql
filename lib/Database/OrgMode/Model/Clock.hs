@@ -116,3 +116,25 @@ getHeadingTotal =
             orderBy [desc total]
 
             return (hname, total)
+
+{-|
+Retrieves total duration for each 'Document'
+
+DESC sorted by total duration
+-}
+getDocumentTotal :: (MonadIO m) => ReaderT SqlBackend m [(Value Text, Value (Maybe Int))]
+getDocumentTotal =
+    select $
+        from $ \(doc, clock, tag, rel, heading) -> do
+            let dname = doc ^. DocumentName
+                total = sum_ (clock ^. ClockDuration)
+
+            where_ (doc ^. DocumentId ==. heading ^. HeadingDocument)
+            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+
+            groupBy dname
+            orderBy [desc total]
+
+            return (dname, total)
