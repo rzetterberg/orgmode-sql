@@ -57,3 +57,20 @@ getByHeading headingId =
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
+
+{-|
+Retrives all 'Clock's by 'Tag' name
+
+ASC sorted by clock start.
+-}
+getByTag :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Clock]
+getByTag tagName =
+    select $
+        from $ \(clock, heading, rel, tag) -> do
+            where_ (tag ^. TagName ==. val tagName)
+            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            orderBy [asc (clock ^. ClockStart)]
+
+            return clock
