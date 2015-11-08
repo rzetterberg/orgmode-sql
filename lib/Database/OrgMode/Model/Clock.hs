@@ -3,7 +3,8 @@ CRUD functionality for 'Document's.
 -}
 module Database.OrgMode.Model.Clock where
 
-import           Database.Persist
+import           Database.Esqueleto
+import qualified Database.Persist as P
 
 import           Database.OrgMode.Import
 import           Database.OrgMode.Model
@@ -16,7 +17,7 @@ Adds the given 'Document' into the database. Simply a wrapper for persists'
 'insert' function.
 -}
 add :: (MonadIO m) => Clock -> ReaderT SqlBackend m (Key Clock)
-add = insert
+add = P.insert
 
 -------------------------------------------------------------------------------
 -- * Retrieval
@@ -27,7 +28,7 @@ Retrieves all 'Document's in the database.
 No sorting
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Clock]
-getAll = selectList [] []
+getAll = P.selectList [] []
 
 {-|
 Retrieves all clocks in the database and sums up all durations to produce the
@@ -41,3 +42,18 @@ getTotalDuration :: (MonadIO m)
 getTotalDuration = liftM (foldl sumDur 0)
   where
     sumDur curr (Entity _ Clock{..}) = curr + clockDuration
+
+{-|
+Retrives all 'Clock's by 'Heading' Id.
+
+ASC sorted by clock start.
+-}
+getByHeading :: (MonadIO m) => Key Heading -> ReaderT SqlBackend m [Entity Clock]
+getByHeading headingId =
+    select $
+        from $ \(heading, clock) -> do
+            where_ (heading ^. HeadingId ==. val headingId)
+            where_ (clock ^. ClockOwner ==. heading ^. HeadingSection)
+            orderBy [asc (clock ^. ClockStart)]
+
+            return clock
