@@ -31,16 +31,16 @@ import           Database.OrgMode.Import
 --------------------------------------------------------------------------------
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Document
+Document json
     name Text
     text Text
     deriving Show
 
-Section
+Section json
     paragraph Text
     deriving Show
 
-Heading
+Heading json
     level Int
     keyword Text Maybe
     title Text
@@ -49,19 +49,19 @@ Heading
     document DocumentId
     deriving Show
 
-Clock
+Clock json
     owner SectionId
     start UTCTime
     end UTCTime Maybe
     duration Int
     deriving Show
 
-Tag
+Tag json
     name Text
     UniqueTag name
     deriving Show
 
-TagRel
+TagRel json
     owner HeadingId
     item TagId
     deriving Show
