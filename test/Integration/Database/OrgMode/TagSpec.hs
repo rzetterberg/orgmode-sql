@@ -16,8 +16,8 @@ import qualified Database.OrgMode.Model.Tag as Tag
 -------------------------------------------------------------------------------
 
 spec :: Spec
-spec =
-  describe "getByDocument" $ do
+spec = do
+  describe "getByDocumentName" $ do
       it "separate docs, 1 heading, 1 tag" $ do
           tags <- runDb $ do
               docId1 <- Document.add (Document "doc1" "")
@@ -34,6 +34,27 @@ spec =
               void $ Tag.add hedId1 "tag1"
               void $ Tag.add hedId2 "tag2"
 
-              Tag.getByDocument "doc1"
+              Tag.getByDocumentName "doc1"
 
           (length tags) `shouldBe` 1
+  describe "getByHeading" $ do
+      it "separate docs, 1 heading, 2 tags" $ do
+          tags <- runDb $ do
+              docId1 <- Document.add (Document "doc1" "")
+              docId2 <- Document.add (Document "doc2" "")
+              secId1 <- Section.add (Section "sec1")
+              secId2 <- Section.add (Section "sec2")
+
+              hedId1 <- Heading.add $
+                  Heading 0 Nothing "head1" secId1 Nothing docId1
+
+              hedId2 <- Heading.add $
+                  Heading 0 Nothing "head2" secId2 Nothing docId2
+
+              void $ Tag.add hedId1 "tag1"
+              void $ Tag.add hedId1 "tag2"
+              void $ Tag.add hedId2 "tag3"
+
+              Tag.getByHeading hedId1
+
+          (length tags) `shouldBe` 2

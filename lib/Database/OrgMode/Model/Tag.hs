@@ -43,17 +43,32 @@ getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Tag]
 getAll = P.selectList [] [P.Asc TagName]
 
 {-|
-Retrives all 'Tag's by document name.
+Retrives all 'Tag's by a 'Document' name.
 
 ASC sorted by name.
 -}
-getByDocument :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Tag]
-getByDocument docName =
+getByDocumentName :: (MonadIO m) => Text -> ReaderT SqlBackend m [Entity Tag]
+getByDocumentName docName =
     select $
         from $ \(doc, heading, rel, tag) -> do
             where_ (doc ^. DocumentName ==. val docName)
             where_ (doc ^. DocumentId ==. heading ^. HeadingDocument)
             where_ (heading ^. HeadingId ==. rel ^. TagRelOwner)
+            where_ (rel ^. TagRelItem ==. tag ^. TagId)
+            orderBy [asc (tag ^. TagName)]
+
+            return tag
+
+{-|
+Retrives all 'Tag's by 'Heading' Id.
+
+ASC sorted by name.
+-}
+getByHeading :: (MonadIO m) => Key Heading -> ReaderT SqlBackend m [Entity Tag]
+getByHeading headingId =
+    select $
+        from $ \(tag, rel) -> do
+            where_ (rel ^. TagRelOwner ==. val headingId)
             where_ (rel ^. TagRelItem ==. tag ^. TagId)
             orderBy [asc (tag ^. TagName)]
 
