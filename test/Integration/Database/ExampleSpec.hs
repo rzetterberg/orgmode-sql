@@ -3,7 +3,7 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Integration.Database.OrgModeSpec (spec) where
+module Integration.Database.ExampleSpec (spec) where
 
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgDoc
 import           Data.Attoparsec.Text (parseOnly)
