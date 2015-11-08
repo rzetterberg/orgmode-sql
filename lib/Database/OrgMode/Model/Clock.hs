@@ -54,6 +54,7 @@ getByHeading headingId =
         from $ \(heading, clock) -> do
             where_ (heading ^. HeadingId  ==. val headingId)
             where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
+
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
@@ -71,6 +72,7 @@ getByTag tagName =
             where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
             where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
             where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
+
             orderBy [asc (clock ^. ClockStart)]
 
             return clock
