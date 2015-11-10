@@ -17,8 +17,8 @@ import           Database.OrgMode.Model (migrateAll)
 
 -------------------------------------------------------------------------------
 
-setupDb :: (MonadIO m) => ReaderT SqlBackend m ()
-setupDb = runMigration migrateAll
+setupDb :: (MonadBaseControl IO m, MonadIO m) => ReaderT SqlBackend m ()
+setupDb = void $ runMigrationSilent migrateAll
 
 runDb :: forall a. SqlPersistT (NoLoggingT (ResourceT IO)) a -> IO a
 runDb a = liftIO $ runSqlite ":memory:" $ setupDb >> a

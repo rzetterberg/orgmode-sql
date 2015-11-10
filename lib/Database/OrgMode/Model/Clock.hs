@@ -1,5 +1,5 @@
 {-|
-CRUD functionality for 'Document's.
+CRUD functionality for 'Clocks's.
 -}
 module Database.OrgMode.Model.Clock where
 
@@ -60,7 +60,7 @@ getByHeading headingId =
             return clock
 
 {-|
-Retrives all 'Clock's by 'Tag' name
+Retrives all 'Clock's by 'Tag' name.
 
 ASC sorted by clock start.
 -}
@@ -78,77 +78,80 @@ getByTag tagName =
             return clock
 
 {-|
-Retrieves total duration for each 'Tag'
+Retrieves total duration for each 'Tag'. Groups by name of the 'Tag'.
+Outputs 'Tag's without clocks as just 0 total.
 
 DESC sorted by total duration
 -}
 getTagTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
 getTagTotal = do
     res <- select $
-        from $ \(clock, tag, rel, heading) -> do
-            let tname = tag ^. TagName
-                total = sum_ (clock ^. ClockDuration)
+        from $ \(tag `LeftOuterJoin` rel `LeftOuterJoin` heading `LeftOuterJoin` clock) -> do
+            let tagName = tag ^. TagName
+                total   = sum_ (clock ?. ClockDuration)
 
-            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
-            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
-            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
+            on (tag   ^. TagId       ==. rel ^. TagRelItem)
+            on (rel   ^. TagRelOwner ==. heading ^. HeadingId)
+            on (clock ?. ClockOwner  ==. just (heading ^. HeadingSection))
 
-            groupBy tname
+            groupBy tagName
             orderBy [desc total]
 
-            return (tname, total)
+            return (tagName, total)
 
     return $ map prepare res
   where
-    prepare (Value n, Value totM) = (n, maybe 0 id totM)
+    prepare (Value tagName, Value totM) = (tagName, maybe 0 id totM)
 
 {-|
-Retrieves total duration for each 'Heading'
+Retrieves total duration for each 'Heading'. Groups by title of the 'Heading'.
+Outputs 'Heading's without clocks as just 0 total.
 
 DESC sorted by total duration
 -}
-getHeadingTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
+getHeadingTotal :: (MonadIO m) => ReaderT SqlBackend m [(Key Heading, Text, Int)]
 getHeadingTotal = do
     res <- select $
-        from $ \(clock, tag, rel, heading) -> do
-            let hname = heading ^. HeadingTitle
-                total = sum_ (clock ^. ClockDuration)
+        from $ \(heading `LeftOuterJoin` clock) -> do
+            let headId    = heading ^. HeadingId
+                headTitle = heading ^. HeadingTitle
+                total     = sum_ (clock ?. ClockDuration)
 
-            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
-            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
-            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
+            on (clock ?. ClockOwner ==. just (heading ^. HeadingSection))
 
-            groupBy hname
+            groupBy headId
             orderBy [desc total]
 
-            return (hname, total)
+            return (headId, headTitle, total)
 
     return $ map prepare res
   where
-    prepare (Value n, Value totM) = (n, maybe 0 id totM)
+    prepare (Value headId, Value headName, Value totM)
+        = (headId, headName, maybe 0 id totM)
 
 {-|
-Retrieves total duration for each 'Document'
+Retrieves total duration for each 'Document'. Groups by name of the 'Document'.
+Outputs 'Document's without clocks as just 0 total.
 
 DESC sorted by total duration
 -}
-getDocumentTotal :: (MonadIO m) => ReaderT SqlBackend m [(Text, Int)]
+getDocumentTotal :: (MonadIO m) => ReaderT SqlBackend m [(Key Document, Text, Int)]
 getDocumentTotal = do
     res <- select $
-        from $ \(doc, clock, tag, rel, heading) -> do
-            let dname = doc ^. DocumentName
-                total = sum_ (clock ^. ClockDuration)
+        from $ \(doc `LeftOuterJoin` heading `LeftOuterJoin` clock) -> do
+            let docId   = doc ^. DocumentId
+                docName = doc ^. DocumentName
+                total   = sum_ (clock ?. ClockDuration)
 
-            where_ (doc     ^. DocumentId ==. heading ^. HeadingDocument)
-            where_ (heading ^. HeadingId  ==. rel     ^. TagRelOwner)
-            where_ (rel     ^. TagRelItem ==. tag     ^. TagId)
-            where_ (clock   ^. ClockOwner ==. heading ^. HeadingSection)
+            on (docId               ==. heading       ^. HeadingDocument)
+            on (clock ?. ClockOwner ==. just (heading ^. HeadingSection))
 
-            groupBy dname
+            groupBy docId
             orderBy [desc total]
 
-            return (dname, total)
+            return (docId, docName, total)
 
     return $ map prepare res
   where
-    prepare (Value n, Value totM) = (n, maybe 0 id totM)
+    prepare (Value docId, Value docName, Value totM)
+        = (docId, docName, maybe 0 id totM)

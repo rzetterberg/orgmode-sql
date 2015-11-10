@@ -34,6 +34,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Document json
     name Text
     text Text
+    UniqueDocument name
     deriving Show
 
 Section json
