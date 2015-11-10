@@ -58,3 +58,18 @@ spec = do
               Tag.getByHeading hedId1
 
           (length tags) `shouldBe` 2
+  describe "getTotals" $ do
+      it "example 4_sections_3_tags_2_clocks" $ do
+          clocks <- runDb $ do
+              importExample "4_sections_3_tags_2_clocks.org"
+
+              Tag.getTotals
+
+          (length clocks) `shouldBe` 3
+      it "example 2_clocks_45_minutes" $ do
+          totals <- runDb $ do
+              importExample "2_clocks_45_minutes.org"
+
+              Tag.getTotals
+
+          (length totals) `shouldBe` 1

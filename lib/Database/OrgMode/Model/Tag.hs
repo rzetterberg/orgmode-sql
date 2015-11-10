@@ -75,3 +75,29 @@ getByHeading headingId =
             orderBy [asc (tag ^. TagName)]
 
             return tag
+
+{-|
+Retrieves total duration for each 'Tag'. Groups by name of the 'Tag'.
+Outputs 'Tag's without clocks as just 0 total.
+
+DESC sorted by total duration
+-}
+getTotals :: (MonadIO m) => ReaderT SqlBackend m [TagTotal]
+getTotals = do
+    res <- select $
+        from $ \(tag `LeftOuterJoin` rel `LeftOuterJoin` heading `LeftOuterJoin` clock) -> do
+            let tagName = tag ^. TagName
+                total   = sum_ (clock ?. ClockDuration)
+
+            on (tag   ^. TagId       ==. rel ^. TagRelItem)
+            on (rel   ^. TagRelOwner ==. heading ^. HeadingId)
+            on (clock ?. ClockOwner  ==. just (heading ^. HeadingSection))
+
+            groupBy tagName
+            orderBy [desc total]
+
+            return (tagName, total)
+
+    return $ map prepare res
+  where
+    prepare (Value tagName, Value totM) = TagTotal tagName (maybe 0 id totM)

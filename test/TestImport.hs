@@ -12,7 +12,12 @@ import           Control.Monad.Reader    as X (ReaderT)
 
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Resource (ResourceT, MonadBaseControl, runResourceT)
+import           Data.Attoparsec.Text (parseOnly)
+import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
+import qualified Database.OrgMode as OrgDb
 import           Database.OrgMode.Model (migrateAll)
 
 -------------------------------------------------------------------------------
@@ -33,3 +38,38 @@ runSqlite' connstr = runResourceT
                    . runStderrLoggingT
                    . withSqliteConn connstr
                    . runSqlConn
+
+{-|
+Imports the given example file to the database
+-}
+importExample :: (MonadIO m) => FilePath -> ReaderT SqlBackend m ()
+importExample fname = do
+    contents <- liftIO (getExample fname)
+    parseImport (T.pack fname) allowedTags contents
+  where
+    allowedTags = ["TODO", "DONE"]
+
+{-|
+Helper for reading a org-mode example file from the `examples` directory in
+test.
+-}
+getExample :: FilePath -> IO Text
+getExample fname = T.readFile $ "test/examples/" ++ fname
+
+{-|
+Helper for parsing org-mode document contents and then importing the result
+into the database. Does nothing on parsing failure, instead lets the database
+test constraints handle the failure (since nothing will be inserted into the
+database on parse failure).
+-}
+parseImport :: (MonadIO m)
+            => Text                    -- ^ Name of the document
+            -> [Text]                  -- ^ Keywords to allow
+            -> Text                    -- ^ org-mode document contents
+            -> ReaderT SqlBackend m ()
+parseImport docName keywords orgContent =
+    case result of
+        Left _    -> return ()
+        Right doc -> void $ OrgDb.importDocument docName doc
+  where
+    result = parseOnly (OrgParse.parseDocument keywords) orgContent

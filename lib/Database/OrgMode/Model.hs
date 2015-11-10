@@ -26,6 +26,8 @@ using a foreign key of the 'Section' ID (AKA one-to-many relationship).
 
 module Database.OrgMode.Model where
 
+import           Data.Aeson
+import           GHC.Generics
 import           Database.OrgMode.Import
 
 --------------------------------------------------------------------------------
@@ -67,3 +69,32 @@ TagRel json
     item TagId
     deriving Show
 |]
+
+data DocumentTotal = DocumentTotal
+    { documentTotalId   :: Key Document
+    , documentTotalName :: Text
+    , docuemntTotal     :: Int
+    } deriving (Eq, Show, Generic)
+
+instance ToJSON DocumentTotal
+
+instance FromJSON DocumentTotal
+
+data HeadingTotal = HeadingTotal
+    { headingTotalId    :: Key Heading
+    , headingTotalTitle :: Text
+    , headingTotal      :: Int
+    } deriving (Eq, Show, Generic)
+
+instance ToJSON HeadingTotal
+
+instance FromJSON HeadingTotal
+
+data TagTotal = TagTotal
+    { tagTotalName :: Text
+    , tagTotal     :: Int
+    } deriving (Eq, Show, Generic)
+
+instance ToJSON TagTotal
+
+instance FromJSON TagTotal

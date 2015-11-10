@@ -45,3 +45,25 @@ spec = do
               Heading.getByTag "tag1"
 
           (length headings) `shouldBe` 1
+  describe "getHeadingTotal" $ do
+      it "example 4_sections_3_tags_2_clocks" $ do
+          totals <- runDb $ do
+              importExample "4_sections_3_tags_2_clocks.org"
+
+              Heading.getTotals
+
+          (length totals) `shouldBe` 4
+      it "example 2_clocks_45_minutes" $ do
+          totals <- runDb $ do
+              importExample "2_clocks_45_minutes.org"
+
+              Heading.getTotals
+
+          (length totals) `shouldBe` 1
+      it "example 2_sections_2_clocks_each" $ do
+          totals <- runDb $ do
+              importExample "2_sections_2_clocks_each.org"
+
+              Heading.getTotals
+
+          (length totals) `shouldBe` 2
