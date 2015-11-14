@@ -95,7 +95,7 @@ yearMonthToUTC year month = (start, end)
 
 {-|
 Takes a year and week and converts it to a pair of 'UTCTime' that represents
-the start of the week (first day, 00:00:00) and the end of the month
+the start of the week (first day, 00:00:00) and the end of the week
 (last day, 23:59:59).
 -}
 yearWeekToUTC :: Integer -> Int -> (UTCTime, UTCTime)
@@ -103,3 +103,12 @@ yearWeekToUTC year week = (start, end)
   where
     start = UTCTime (T.fromWeekDate year week 1) startDayTime
     end   = UTCTime (T.fromWeekDate year week 7) endDayTime
+
+{-|
+Takes a year, month and day and converts it to a pair of 'UTCTime' that represents
+the start of the day (00:00:00) and the end of the day (23:59:59).
+-}
+dateToUTC :: Integer -> Int -> Int -> (UTCTime, UTCTime)
+dateToUTC year week day = (conv startDayTime, conv endDayTime)
+  where
+    conv = UTCTime (T.fromWeekDate year week day)
