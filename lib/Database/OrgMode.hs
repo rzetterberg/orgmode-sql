@@ -55,7 +55,7 @@ parseTextImport :: (MonadIO m)
                 -> ReaderT SqlBackend m (Either String (Key Db.Document))
 parseTextImport docName keywords orgContent =
     case result of
-        Left err  -> return (Left err)
+        Left  err -> Left  `liftM` err
         Right doc -> Right `liftM` importDocument docName doc
   where
     result = parseOnly (OrgParse.parseDocument keywords) orgContent
