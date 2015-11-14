@@ -3,7 +3,7 @@ module Main where
 import           Criterion.Main (defaultMain)
 import           Prelude
 
-import qualified Model.ClockBench as ClockBench
+import qualified Query.ClockBench as ClockBench
 
 --------------------------------------------------------------------------------
 

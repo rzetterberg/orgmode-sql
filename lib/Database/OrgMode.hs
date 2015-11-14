@@ -32,11 +32,11 @@ import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import           Database.OrgMode.Import
 import qualified Database.OrgMode.Marshall as Db
 import qualified Database.OrgMode.Model as Db
-import qualified Database.OrgMode.Model.Clock as Clock
-import qualified Database.OrgMode.Model.Document as Document
-import qualified Database.OrgMode.Model.Heading as Heading
-import qualified Database.OrgMode.Model.Section as Section
-import qualified Database.OrgMode.Model.Tag as Tag
+import qualified Database.OrgMode.Query.Clock as Clock
+import qualified Database.OrgMode.Query.Document as Document
+import qualified Database.OrgMode.Query.Heading as Heading
+import qualified Database.OrgMode.Query.Section as Section
+import qualified Database.OrgMode.Query.Tag as Tag
 
 -------------------------------------------------------------------------------
 -- * Unparsed raw data import

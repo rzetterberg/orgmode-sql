@@ -1,7 +1,7 @@
 {-|
 CRUD functionality for 'Heading's.
 -}
-module Database.OrgMode.Model.Heading where
+module Database.OrgMode.Query.Heading where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P

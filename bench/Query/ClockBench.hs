@@ -1,15 +1,15 @@
-module Model.ClockBench (benches) where
+module Query.ClockBench (benches) where
 
 import           BenchImport
 import           Criterion.Types
 import           Data.Time.Clock (getCurrentTime)
 
 import           Database.OrgMode.Model
-import qualified Database.OrgMode.Model.Clock as Clock
-import qualified Database.OrgMode.Model.Document as Document
-import qualified Database.OrgMode.Model.Heading as Heading
-import qualified Database.OrgMode.Model.Section as Section
-import qualified Database.OrgMode.Model.Tag as Tag
+import qualified Database.OrgMode.Query.Clock as Clock
+import qualified Database.OrgMode.Query.Document as Document
+import qualified Database.OrgMode.Query.Heading as Heading
+import qualified Database.OrgMode.Query.Section as Section
+import qualified Database.OrgMode.Query.Tag as Tag
 
 --------------------------------------------------------------------------------
 

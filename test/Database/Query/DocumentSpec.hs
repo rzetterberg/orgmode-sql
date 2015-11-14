@@ -3,11 +3,11 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Database.Model.DocumentSpec (spec) where
+module Database.Query.DocumentSpec (spec) where
 
 import           TestImport
 
-import qualified Database.OrgMode.Model.Document as Document
+import qualified Database.OrgMode.Query.Document as Document
 
 -------------------------------------------------------------------------------
 

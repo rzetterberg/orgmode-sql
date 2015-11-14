@@ -3,17 +3,17 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Database.Model.HeadingSpec (spec) where
+module Database.Query.HeadingSpec (spec) where
 
 import           Data.Time.Clock (getCurrentTime)
 import           TestImport
 
 import           Database.OrgMode.Model
-import qualified Database.OrgMode.Model.Document as Document
-import qualified Database.OrgMode.Model.Heading as Heading
-import qualified Database.OrgMode.Model.Section as Section
-import qualified Database.OrgMode.Model.Tag as Tag
-import qualified Database.OrgMode.Model.Clock as Clock
+import qualified Database.OrgMode.Query.Document as Document
+import qualified Database.OrgMode.Query.Heading as Heading
+import qualified Database.OrgMode.Query.Section as Section
+import qualified Database.OrgMode.Query.Tag as Tag
+import qualified Database.OrgMode.Query.Clock as Clock
 
 -------------------------------------------------------------------------------
 

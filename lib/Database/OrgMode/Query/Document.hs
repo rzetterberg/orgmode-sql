@@ -1,7 +1,7 @@
 {-|
 CRUD functionality for 'Document's.
 -}
-module Database.OrgMode.Model.Document where
+module Database.OrgMode.Query.Document where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P

@@ -19,11 +19,11 @@ library
 
   exposed-modules: Database.OrgMode
                  , Database.OrgMode.Model
-                 , Database.OrgMode.Model.Clock
-                 , Database.OrgMode.Model.Document
-                 , Database.OrgMode.Model.Heading
-                 , Database.OrgMode.Model.Section
-                 , Database.OrgMode.Model.Tag
+                 , Database.OrgMode.Query.Clock
+                 , Database.OrgMode.Query.Document
+                 , Database.OrgMode.Query.Heading
+                 , Database.OrgMode.Query.Section
+                 , Database.OrgMode.Query.Tag
                  , Database.OrgMode.Marshall
                  , Database.OrgMode.Import
 

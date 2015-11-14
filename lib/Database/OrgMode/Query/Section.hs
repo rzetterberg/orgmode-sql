@@ -1,7 +1,7 @@
 {-|
 CRUD functionality for 'Section's.
 -}
-module Database.OrgMode.Model.Section where
+module Database.OrgMode.Query.Section where
 
 import           Database.Persist
 

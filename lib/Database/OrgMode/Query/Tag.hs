@@ -1,7 +1,7 @@
 {-|
 CRUD functionality for 'Tag's.
 -}
-module Database.OrgMode.Model.Tag where
+module Database.OrgMode.Query.Tag where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P

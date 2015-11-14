@@ -8,9 +8,9 @@ module Database.ExampleSpec (spec) where
 import qualified Data.Text as T
 import           TestImport
 
-import qualified Database.OrgMode.Model.Clock as Clock
-import qualified Database.OrgMode.Model.Section as Section
-import qualified Database.OrgMode.Model.Tag as Tag
+import qualified Database.OrgMode.Query.Clock as Clock
+import qualified Database.OrgMode.Query.Section as Section
+import qualified Database.OrgMode.Query.Tag as Tag
 
 -------------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 {-|
 CRUD functionality for 'Clocks's.
 -}
-module Database.OrgMode.Model.Clock where
+module Database.OrgMode.Query.Clock where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
