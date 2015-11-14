@@ -99,6 +99,55 @@ test-suite test
 
   default-language:    Haskell2010
 
+benchmark bench
+    type:              exitcode-stdio-1.0
+    main-is:           Bench.hs
+    hs-source-dirs:    bench
+
+    ghc-options:       -Wall
+
+    default-extensions: TemplateHaskell
+                        QuasiQuotes
+                        OverloadedStrings
+                        NoImplicitPrelude
+                        CPP
+                        MultiParamTypeClasses
+                        TypeFamilies
+                        GADTs
+                        GeneralizedNewtypeDeriving
+                        FlexibleContexts
+                        EmptyDataDecls
+                        NoMonomorphismRestriction
+                        DeriveDataTypeable
+                        ViewPatterns
+                        TupleSections
+                        FlexibleContexts
+                        OverloadedStrings
+                        Rank2Types
+                        KindSignatures
+
+    build-depends: aeson
+                 , attoparsec              >= 0.12
+                 , monad-control           >= 1.0
+                 , monad-logger            >= 0.3
+                 , mtl                     >= 2.2
+                 , orgmode-parse           >= 0.1
+                 , persistent              >= 2.2
+                 , persistent-sqlite       >= 2.2
+                 , persistent-template     >= 2.1
+                 , resourcet               >= 1.1
+                 , text                    >= 1.2
+                 , unordered-containers    >= 0.2
+                 , abstract-par
+                 , base
+                 , criterion
+                 , directory
+                 , orgmode-sql
+                 , time
+                 , transformers
+
+  default-language: Haskell2010
+
 source-repository head
   type:                 git
   location:             https://github.com/rzetterberg/orgmode-sql

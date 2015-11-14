@@ -1,0 +1,57 @@
+module BenchImport
+    ( module BenchImport
+    , module X
+    ) where
+
+import           Prelude                 as X
+import           Data.Text               as X (Text)
+import           Database.Persist.Sqlite as X
+import           Control.Monad.IO.Class  as X (liftIO, MonadIO)
+import           Control.Monad           as X (void)
+import           Control.Monad.Reader    as X (ReaderT)
+
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Resource (ResourceT, MonadBaseControl)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+
+import qualified Database.OrgMode as OrgDb
+import           Database.OrgMode.Model (migrateAll)
+
+-------------------------------------------------------------------------------
+
+setupDb :: (MonadBaseControl IO m, MonadIO m) => ReaderT SqlBackend m ()
+setupDb = void $ runMigrationSilent migrateAll
+
+runDb :: forall a. SqlPersistT (NoLoggingT (ResourceT IO)) a -> IO a
+runDb a = liftIO $ runSqlite ":memory:" $ setupDb >> a
+
+{-|
+Imports the given example file to the database
+-}
+importExample :: (MonadIO m) => FilePath -> ReaderT SqlBackend m ()
+importExample fname = do
+    contents <- liftIO (getExample fname)
+    parseImport (T.pack fname) allowedTags contents
+  where
+    allowedTags = ["TODO", "DONE"]
+
+{-|
+Helper for reading a org-mode example file from the `examples` directory in
+test.
+-}
+getExample :: FilePath -> IO Text
+getExample fname = T.readFile $ "test/examples/" ++ fname
+
+{-|
+Helper for parsing org-mode document contents and then importing the result
+into the database. Does nothing on parsing failure, instead lets the database
+test constraints handle the failure (since nothing will be inserted into the
+database on parse failure).
+-}
+parseImport :: (MonadIO m)
+            => Text                    -- ^ Name of the document
+            -> [Text]                  -- ^ Keywords to allow
+            -> Text                    -- ^ org-mode document contents
+            -> ReaderT SqlBackend m ()
+parseImport docName keywords = void . OrgDb.parseTextImport docName keywords
