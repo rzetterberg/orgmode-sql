@@ -52,6 +52,7 @@ library
                       ViewPatterns
 
   build-depends: base                    >= 4.4 && < 5.0
+               , attoparsec              >= 0.12
                , mtl                     >= 2.2
                , orgmode-parse           >= 0.1
                , persistent              >= 2.2

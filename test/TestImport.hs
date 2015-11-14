@@ -12,8 +12,6 @@ import           Control.Monad.Reader    as X (ReaderT)
 
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Resource (ResourceT, MonadBaseControl, runResourceT)
-import           Data.Attoparsec.Text (parseOnly)
-import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -67,9 +65,4 @@ parseImport :: (MonadIO m)
             -> [Text]                  -- ^ Keywords to allow
             -> Text                    -- ^ org-mode document contents
             -> ReaderT SqlBackend m ()
-parseImport docName keywords orgContent =
-    case result of
-        Left _    -> return ()
-        Right doc -> void $ OrgDb.importDocument docName doc
-  where
-    result = parseOnly (OrgParse.parseDocument keywords) orgContent
+parseImport docName keywords = void . OrgDb.parseTextImport docName keywords

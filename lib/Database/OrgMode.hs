@@ -1,25 +1,33 @@
 {-|
-Functionality to import a parsed org-mode document into a SQL database. Does not
-contain any functionality to perform the parsing, only to convert the types from
-the orgmode-parse library into database friendly types. Oh, it also does the
-actual insertion of the data into the database.
+A library that parses org-mode documents, imports the data into an SQL database,
+provides the user with common queries on the data and functionality to export
+the data to different data formats.
 
-The module is divided into two parts:
+The goal of this library is to be usable with MySQL, PostgreSQL and SQLite.
+However, currently testing is only performed on SQLite.
 
-- Public API
-- Private API
+The foundation of this library is built using orgmode-parse and persistent.
+Those two libraries takes care of the heavy lifting and solves the real
+problems.
 
-Public API contains all the functions that is needed to use this library as an
-end-user. But, sometimes you need to access to underlying functions too. That's
-why all functions are exported from the module, but divided into two parts to
-try and keep it simple.
+NB: this library has own data types for org-mode data that have the
+same names as the ones in orgmode-parse. The difference is the data types
+in this library are simplified and adapted for use in SQL-databases.
 
-<-- Here the usage examples will be shown -->
+The current feature status of this library is:
+
+- Parsing: 100%
+- Database creation: 100%
+- Common queries: 100%
+- Complex queries: 10%
+- Exporting: 10%
 -}
 
 module Database.OrgMode where
 
+import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
+import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 
 import           Database.OrgMode.Import
 import qualified Database.OrgMode.Marshall as Db
@@ -31,7 +39,29 @@ import qualified Database.OrgMode.Model.Section as Section
 import qualified Database.OrgMode.Model.Tag as Tag
 
 -------------------------------------------------------------------------------
--- * Public API
+-- * Unparsed raw data import
+
+{-|
+Takes a strict 'Text' and tries to parse the document and import it to the
+database.
+
+Returns the database ID of the created document or the error message from
+the parser.
+-}
+parseTextImport :: (MonadIO m)
+                => Text                    -- ^ Name of the document
+                -> [Text]                  -- ^ Keywords to allow
+                -> Text                    -- ^ org-mode document contents
+                -> ReaderT SqlBackend m (Either String (Key Db.Document))
+parseTextImport docName keywords orgContent =
+    case result of
+        Left err  -> return (Left err)
+        Right doc -> Right `liftM` importDocument docName doc
+  where
+    result = parseOnly (OrgParse.parseDocument keywords) orgContent
+
+-------------------------------------------------------------------------------
+-- * Parsed data import
 
 {-|
 Takes a parsed document and it's name and inserts it into the database. The name
@@ -45,7 +75,7 @@ The ID of the document in the database is returned.
 importDocument :: (MonadIO m)
                => Text                                   -- ^ Document name
                -> Document                               -- ^ Parsed document
-               -> ReaderT SqlBackend m (Key Db.Document) -- ^ ID of the inserted
+               -> ReaderT SqlBackend m (Key Db.Document) -- ^ ID of created doc
 importDocument docName doc = do
     docId <- Document.add dbDoc
 
@@ -54,9 +84,6 @@ importDocument docName doc = do
     return docId
   where
     dbDoc = Db.documentToDb docName doc
-
--------------------------------------------------------------------------------
--- * Private API
 
 {-|
 Takes a parsed heading and inserts it into the database. Since headings in
@@ -99,7 +126,7 @@ with `org-evaluate-time-range` manually also. Sometimes you forget to do this
 update, that's why we make sure the duration is updated by calculating it before
 inserting the clock.
 
-NB: orgmode-parse does not expose the Clock-type, hence the funky tuple.
+NB: orgmode-parse does not export the Clock-type, hence the funky tuple.
 -}
 importClock :: (MonadIO m)
             => Key Db.Section                    -- ^ ID of the owner
