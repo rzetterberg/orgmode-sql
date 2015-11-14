@@ -9,7 +9,7 @@ import qualified Data.Text as T
 import           TestImport
 
 import qualified Database.OrgMode.Query.Clock as Clock
-import qualified Database.OrgMode.Query.Section as Section
+import qualified Database.OrgMode.Query.Heading as Heading
 import qualified Database.OrgMode.Query.Tag as Tag
 
 -------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ mkDurationTest fname expDur = it ("duration example, " ++ fname) $ do
 
     dur <- runDb $ do
         parseImport (T.pack fname) allowedTags content
-        Clock.getTotalDuration Clock.getAll
+        Clock.getTotalDuration
 
     dur `shouldBe` expDur
 
@@ -50,18 +50,18 @@ Creates a generic test that loads an org-mode file and checks that the database
 will be populated with the given amount of sections, tags and clocks.
 -}
 mkLengthTest :: FilePath -> Int -> Int -> Int -> SpecWith ()
-mkLengthTest fname secLen tagLen clockLen = it ("length example, " ++ fname) $ do
+mkLengthTest fname hedLen tagLen clockLen = it ("length example, " ++ fname) $ do
     content <- getExample fname
 
-    (secs, tags, clocks) <- runDb $ do
+    (headings, tags, clocks) <- runDb $ do
         parseImport (T.pack fname) allowedTags content
 
-        s <- Section.getAll
+        h <- Heading.getAll
         t <- Tag.getAll
         c <- Clock.getAll
 
-        return (s, t, c)
+        return (h, t, c)
 
-    length secs `shouldBe` secLen
+    length headings `shouldBe` hedLen
     length tags `shouldBe` tagLen
     length clocks `shouldBe` clockLen

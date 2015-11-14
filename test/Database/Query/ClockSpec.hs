@@ -7,7 +7,6 @@ module Database.Query.ClockSpec (spec) where
 
 import           TestImport
 
-import           Database.OrgMode.Model
 import qualified Database.OrgMode.Query.Heading as Heading
 import qualified Database.OrgMode.Query.Clock as Clock
 
@@ -27,10 +26,6 @@ spec = do
               Clock.getByHeading hedId1
 
           (length clocks) `shouldBe` 1
-
-          let (Entity _ clock1):_ = clocks
-
-          (clockDuration clock1) `shouldBe` (2 * 60 * 60)
       it "example 2_clocks_45_minutes" $ do
           clocks <- runDb $ do
               importExample "2_clocks_45_minutes.org"

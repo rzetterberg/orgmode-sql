@@ -18,13 +18,17 @@ library
   hs-source-dirs: lib
 
   exposed-modules: Database.OrgMode
+                 , Database.OrgMode.Marshall
                  , Database.OrgMode.Model
                  , Database.OrgMode.Query.Clock
+                 , Database.OrgMode.Query.DateTime
                  , Database.OrgMode.Query.Document
                  , Database.OrgMode.Query.Heading
-                 , Database.OrgMode.Query.Section
+                 , Database.OrgMode.Query.Planning
+                 , Database.OrgMode.Query.Property
                  , Database.OrgMode.Query.Tag
-                 , Database.OrgMode.Marshall
+                 , Database.OrgMode.Query.TagRel
+                 , Database.OrgMode.Query.Timestamp
                  , Database.OrgMode.Import
 
   ghc-options:
@@ -60,6 +64,7 @@ library
                , resourcet               >= 1.1
                , text                    >= 1.2
                , esqueleto               >= 2.4
+               , unordered-containers    >= 0.2
                , time
                , transformers
                , aeson
