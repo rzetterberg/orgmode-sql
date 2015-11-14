@@ -3,7 +3,7 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Integration.Database.OrgMode.TagSpec (spec) where
+module Database.Model.TagSpec (spec) where
 
 import           TestImport
 

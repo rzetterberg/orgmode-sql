@@ -3,7 +3,7 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Integration.Database.OrgMode.HeadingSpec (spec) where
+module Database.Model.HeadingSpec (spec) where
 
 import           Data.Time.Clock (getCurrentTime)
 import           TestImport

@@ -3,7 +3,7 @@ Tests that use complete org-mode documents to verify that the whole process of
 parsing and importing the data to the database works as expected.
 -}
 
-module Integration.Database.ExampleSpec (spec) where
+module Database.ExampleSpec (spec) where
 
 import qualified Data.Text as T
 import           TestImport
