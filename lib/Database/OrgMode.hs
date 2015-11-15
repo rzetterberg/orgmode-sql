@@ -53,10 +53,13 @@ module Database.OrgMode where
 
 import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
-import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
+import           Data.Time.Clock (UTCTime(..))
+import           Database.Persist (Entity(..))
 import qualified Data.HashMap.Strict as HM
-import           Data.Time.Calendar (fromGregorian)
-import           Data.Time.Clock (UTCTime(..), secondsToDiffTime, diffUTCTime)
+import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
+import qualified Data.Time.Calendar as T
+import qualified Data.Time.Calendar.WeekDate as T
+import qualified Data.Time.Clock as T
 
 import           Database.OrgMode.Import
 import qualified Database.OrgMode.Model as Db
@@ -65,8 +68,6 @@ import qualified Database.OrgMode.Query.Heading as DbHeading
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Query.TagRel as DbTagRel
 import qualified Database.OrgMode.Query.Clock as DbClock
-import qualified Database.OrgMode.Query.DateTime as DbDateTime
-import qualified Database.OrgMode.Query.Timestamp as DbTimestamp
 import qualified Database.OrgMode.Query.Planning as DbPlanning
 import qualified Database.OrgMode.Query.Property as DbProperty
 
@@ -170,28 +171,7 @@ importTag headingId tagName = do
     return tagId
 
 {-|
-Imports the given timestamp into the database and returns the ID it was given.
--}
-importTimestamp :: (MonadIO m)
-                => Timestamp                               -- ^ Tstamp to save
-                -> ReaderT SqlBackend m (Key Db.Timestamp) -- ^ Given ID
-importTimestamp tstamp = do
-    startId <- DbDateTime.add (dateTimeToDb tsTime)
-    endIdM  <- case tsEndTime of
-        Nothing  -> return Nothing
-        Just end -> do
-            endId <- DbDateTime.add (dateTimeToDb end)
-            return (Just endId)
-
-    DbTimestamp.add startId tsActive endIdM dur
-  where
-    Timestamp{..} = tstamp
-    dur = dateTimeToDur tsTime tsEndTime
-
-{-|
-Imports the given clock into the database and returns the ID it was given,
-if the import was successful. Since the timestamp of clocks in orgmode-parse
-can be 'Nothing' this functions returns a 'Maybe' that contains the ID.
+Imports the given clock into the database and returns the ID it was given.
 
 NB: This function also handles the relationship between a heading and the
 given clock.
@@ -203,12 +183,13 @@ importClock :: (MonadIO m)
             -> (Maybe Timestamp, Maybe Duration)           -- ^ Clock to insert
             -> ReaderT SqlBackend m (Maybe (Key Db.Clock)) -- ^ Given ID
 importClock _         (Nothing, _)     = return Nothing
-importClock headingId (Just tstamp, _) = do
-    tstampId <- importTimestamp tstamp
-
-    clockId <- DbClock.add headingId tstampId
-
-    return (Just clockId)
+importClock headingId (Just tstamp, _)
+    = DbClock.add headingId tsActive start endM dur >>= return . Just
+  where
+    Timestamp{..} = tstamp
+    start = dateTimeToUTC tsTime
+    endM  = dateTimeToUTC <$> tsEndTime
+    dur   = utcToDur start endM
 
 {-|
 Imports given planning into the database and returns the ID it was given.
@@ -221,10 +202,11 @@ importPlanning :: (MonadIO m)
                => Key Db.Heading                         -- ^ ID of owner
                -> (PlanningKeyword, Timestamp)           -- ^ Planning to insert
                -> ReaderT SqlBackend m (Key Db.Planning) -- ^ Given ID
-importPlanning headingId (kword, tstamp) = do
-    tstampId <- importTimestamp tstamp
-
-    DbPlanning.add headingId kword tstampId
+importPlanning hedId (kword, tstamp)
+    = DbPlanning.add hedId kword start
+  where
+    Timestamp{..} = tstamp
+    start = dateTimeToUTC tsTime
 
 {-|
 Imports given property into the database and returns the ID it was given.
@@ -240,21 +222,125 @@ importProperty :: (MonadIO m)
 importProperty headingId (key, val) = DbProperty.add headingId key val
 
 -------------------------------------------------------------------------------
--- * Data conversion helpers
+-- * Data export
 
 {-|
-Helper for converting a orgmode-parse 'DateTime' into a orgmode-sql
-DateTime. DateTimes in orgmode-sql is adapted for being saved in the database
-and is therefor a bit simplified with a flat structure and some data missing.
+Exports a complete document along with it's headings from the database.
 -}
-dateTimeToDb :: DateTime -> Db.DateTime
-dateTimeToDb (DateTime cal _ clockM _ _)
-    = Db.DateTime year month day hour minute
+exportDocument :: (MonadIO m)
+               => Key Db.Document                       -- ^ ID of document
+               -> ReaderT SqlBackend m (Maybe Document) -- ^ Complete document
+exportDocument docId = DbDocument.get docId >>= go
   where
-    (YMD' (YearMonthDay year month day)) = cal
-    (hour, minute) = case clockM of
-        Nothing     -> (0, 0)
-        Just (h, m) -> (h, m)
+    go Nothing    = return Nothing
+    go (Just doc) = do
+        dbHeadings <- DbHeading.getByDocument docId
+        headings   <- mapM exportHeading dbHeadings
+
+        let res = Document (Db.documentText doc) headings
+
+        return (Just res)
+
+{-|
+-}
+exportHeading :: (MonadIO m)
+              => Entity Db.Heading            -- ^ ID of document owner
+              -> ReaderT SqlBackend m Heading -- ^ Complete heading
+exportHeading (Entity hedId heading) = do
+    plannings  <- exportPlannings hedId
+    clocks     <- exportClocks hedId
+    properties <- exportProperties hedId
+    tags       <- exportTags hedId
+
+    let sec = Section { sectionPlannings  = plannings
+                      , sectionClocks     = clocks
+                      , sectionProperties = properties
+                      , sectionParagraph  = Db.headingParagraph heading
+                      }
+
+    return $ Heading { level       = Level (Db.headingLevel heading)
+                     , keyword     = StateKeyword <$> Db.headingKeyword heading
+                     , priority    = Db.headingPriority heading
+                     , title       = Db.headingTitle heading
+                     , stats       = Nothing
+                     , tags        = tags
+                     , section     = sec
+                     , subHeadings = []
+                     }
+
+exportPlannings :: (MonadIO m)
+                => Key Db.Heading                 -- ^ ID of heading owner
+                -> ReaderT SqlBackend m Plannings -- ^ Complete plannings
+exportPlannings hedId = do
+    dbPlannings <- (map fromDb) `liftM` DbPlanning.getByHeading hedId
+
+    return $ Plns (HM.fromList dbPlannings)
+  where
+    fromDb (Entity _ p)
+        = let tstamp = Timestamp start{ hourMinute = Nothing } True Nothing
+              start  = utcToDateTime (Db.planningTime p)
+          in (Db.planningKeyword p, tstamp)
+
+exportClocks :: (MonadIO m)
+             => Key Db.Heading
+             -> ReaderT SqlBackend m [(Maybe Timestamp, Maybe Duration)]
+exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
+  where
+    fromDb (Entity _ clock)
+        = let tstamp  = Timestamp start (Db.clockActive clock) endM
+              start   = utcToDateTime (Db.clockStart clock)
+              endM    = utcToDateTime <$> Db.clockEnd clock
+              (m, _)  = (Db.clockDuration clock) `divMod` 60
+              (h, m') = m `divMod` 60
+          in (Just tstamp, Just (h, m'))
+
+exportProperties :: (MonadIO m)
+                 => Key Db.Heading
+                 -> ReaderT SqlBackend m Properties
+exportProperties hedId =   DbProperty.getByHeading hedId
+                       >>= return . HM.fromList . map fromDb
+  where
+    fromDb (Entity _ p) = (Db.propertyKey p, Db.propertyValue p)
+
+exportTags :: (MonadIO m)
+           => Key Db.Heading
+           -> ReaderT SqlBackend m [Tag]
+exportTags hedId = (map fromDb) `liftM` DbTag.getByHeading hedId
+  where
+    fromDb (Entity _ t) = Db.tagName t
+
+-------------------------------------------------------------------------------
+-- * Helpers
+
+{-|
+Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
+used for convenience when calculating the duration of two 'DateTime's.
+-}
+utcToDateTime :: UTCTime
+              -> DateTime
+utcToDateTime UTCTime{..}
+    = DateTime { yearMonthDay = ymd
+               , dayName      = Just weekDayLit
+               , hourMinute   = Just (hours, minutes2)
+               , repeater     = Nothing
+               , delay        = Nothing
+               }
+  where
+    (seconds, _)      = properFraction utctDayTime
+    (minutes, _)      = seconds `divMod` 60
+    (hours, minutes2) = minutes `divMod` 60
+    ymd               = YMD' $ YearMonthDay (fromInteger y) m d
+    (y, m, d)         = T.toGregorian utctDay
+    (_, _, weekDay)   = T.toWeekDate utctDay
+    weekDayLit
+        = case weekDay of
+            1 -> "Mon"
+            2 -> "Tue"
+            3 -> "Wed"
+            4 -> "Thu"
+            5 -> "Fri"
+            6 -> "Sat"
+            _ -> "Sun"
 
 {-|
 Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
@@ -263,8 +349,8 @@ used for convenience when calculating the duration of two 'DateTime's.
 dateTimeToUTC :: DateTime
               -> UTCTime
 dateTimeToUTC (DateTime cal _ clock _ _)
-    = UTCTime (fromGregorian (toInteger year) month day)
-              (secondsToDiffTime midSecs)
+    = UTCTime (T.fromGregorian (toInteger year) month day)
+              (T.secondsToDiffTime midSecs)
   where
     (YMD' (YearMonthDay year month day)) = cal
     calcSecs Nothing       = 0
@@ -276,8 +362,7 @@ Helper for calculating the duration between two 'UTCTime'. Since 'Timestamp's ca
 can have the end time missing, this function accepts 'Maybe' 'DateTime'. When the
 end time is missing a duration of 0 is returned.
 -}
-dateTimeToDur :: DateTime -> Maybe DateTime -> Int
-dateTimeToDur start endM = case endM of
+utcToDur :: UTCTime -> Maybe UTCTime -> Int
+utcToDur start endM = case endM of
     Nothing  -> 0
-    Just end -> round $
-        diffUTCTime (dateTimeToUTC end) (dateTimeToUTC start)
+    Just end -> round $ T.diffUTCTime end start

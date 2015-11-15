@@ -42,3 +42,11 @@ getByTag tagName =
             orderBy [asc (heading ^. HeadingTitle)]
 
             return heading
+
+{-|
+Retrives all 'Heading's by 'Document' ID
+
+ASC sorted by heading title
+-}
+getByDocument :: (MonadIO m) => Key Document -> ReaderT SqlBackend m [Entity Heading]
+getByDocument docId = P.selectList [HeadingDocument P.==. docId] [P.Asc HeadingLevel]

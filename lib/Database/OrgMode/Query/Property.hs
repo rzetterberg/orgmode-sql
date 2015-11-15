@@ -18,3 +18,22 @@ add :: (MonadIO m)
     -> Text
     -> ReaderT SqlBackend m (Key Property)
 add owner key value = P.insert (Property owner key value)
+
+-------------------------------------------------------------------------------
+-- * Retrieval
+
+{-|
+Retrives all 'Property's by 'Heading' Id.
+
+ASC sorted by clock start.
+-}
+getByHeading :: (MonadIO m)
+             => Key Heading
+             -> ReaderT SqlBackend m [Entity Property]
+getByHeading hedId =
+    select $
+        from $ \(heading, property) -> do
+            where_ (heading ^. HeadingId  ==. val hedId)
+            where_ (property ^. PropertyHeading ==. heading ^. HeadingId)
+
+            return property

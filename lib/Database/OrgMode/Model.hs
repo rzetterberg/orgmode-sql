@@ -14,21 +14,6 @@ Document
     UniqueDocument name
     deriving Show
 
-DateTime
-    year Int
-    month Int
-    day Int
-    hour Int
-    minute Int
-    deriving Show
-
-Timestamp
-    start DateTimeId
-    active Bool
-    end DateTimeId Maybe
-    duration Int
-    deriving Show
-
 Heading
     document DocumentId
     parent HeadingId Maybe
@@ -48,12 +33,15 @@ Property
 Planning
     heading HeadingId
     keyword PlanningKeyword
-    time TimestampId
+    time UTCTime
     deriving Show
 
 Clock
     heading HeadingId
-    time TimestampId
+    active Bool
+    start UTCTime
+    end UTCTime Maybe
+    duration Int
     deriving Show
 
 Tag

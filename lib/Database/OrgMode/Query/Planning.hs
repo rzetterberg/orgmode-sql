@@ -16,6 +16,25 @@ import           Database.OrgMode.Model
 add :: (MonadIO m)
     => Key Heading
     -> PlanningKeyword
-    -> Key Timestamp
+    -> UTCTime
     -> ReaderT SqlBackend m (Key Planning)
 add owner keyword time = P.insert (Planning owner keyword time)
+
+-------------------------------------------------------------------------------
+-- * Retrieval
+
+{-|
+Retrives all 'Planning's by 'Heading' Id.
+
+ASC sorted by clock start.
+-}
+getByHeading :: (MonadIO m)
+             => Key Heading
+             -> ReaderT SqlBackend m [Entity Planning]
+getByHeading hedId =
+    select $
+        from $ \(heading, planning) -> do
+            where_ (heading ^. HeadingId  ==. val hedId)
+            where_ (planning ^. PlanningHeading ==. heading ^. HeadingId)
+
+            return planning

@@ -21,14 +21,12 @@ library
                  , Database.OrgMode.Marshall
                  , Database.OrgMode.Model
                  , Database.OrgMode.Query.Clock
-                 , Database.OrgMode.Query.DateTime
                  , Database.OrgMode.Query.Document
                  , Database.OrgMode.Query.Heading
                  , Database.OrgMode.Query.Planning
                  , Database.OrgMode.Query.Property
                  , Database.OrgMode.Query.Tag
                  , Database.OrgMode.Query.TagRel
-                 , Database.OrgMode.Query.Timestamp
                  , Database.OrgMode.Import
 
   ghc-options:

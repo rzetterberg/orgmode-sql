@@ -18,9 +18,12 @@ Adds the given 'Document' into the database. Simply a wrapper for persists'
 -}
 add :: (MonadIO m)
     => Key Heading
-    -> Key Timestamp
+    -> Bool
+    -> UTCTime
+    -> Maybe UTCTime
+    -> Int
     -> ReaderT SqlBackend m (Key Clock)
-add owner time = P.insert (Clock owner time)
+add owner active start endM dur = P.insert $ Clock owner active start endM dur
 
 -------------------------------------------------------------------------------
 -- * Retrieval
@@ -43,15 +46,11 @@ Input query determines the sorting.
 getTotalDuration :: (MonadIO m)
                  => ReaderT SqlBackend m Int
 getTotalDuration = do
-    tstamps <- select $
-        from $ \(clock, tstamp) -> do
-            where_ (tstamp ^. TimestampId ==. clock ^. ClockTime)
-
-            return tstamp
+    tstamps <- P.selectList [] []
 
     return (foldl sumDur 0 tstamps)
   where
-    sumDur curr (Entity _ Timestamp{..}) = curr + timestampDuration
+    sumDur curr (Entity _ Clock{..}) = curr + clockDuration
 
 {-|
 Retrives all 'Clock's by 'Heading' Id.

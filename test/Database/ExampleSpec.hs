@@ -5,9 +5,12 @@ parsing and importing the data to the database works as expected.
 
 module Database.ExampleSpec (spec) where
 
-import qualified Data.Text as T
+import           Data.Attoparsec.Text (parseOnly)
 import           TestImport
+import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
+import qualified Data.Text as T
 
+import qualified Database.OrgMode as OrgDb
 import qualified Database.OrgMode.Query.Clock as Clock
 import qualified Database.OrgMode.Query.Heading as Heading
 import qualified Database.OrgMode.Query.Tag as Tag
@@ -27,6 +30,8 @@ spec =
 
       mkDurationTest "1_clock_2_hours.org" 7200
       mkDurationTest "2_clocks_45_minutes.org" 2700
+
+      mkImportExportTest "1_clock_2_hours_2_plannings.org"
 
 allowedTags :: [Text]
 allowedTags = ["DONE", "TODO"]
@@ -65,3 +70,18 @@ mkLengthTest fname hedLen tagLen clockLen = it ("length example, " ++ fname) $ d
     length headings `shouldBe` hedLen
     length tags `shouldBe` tagLen
     length clocks `shouldBe` clockLen
+
+mkImportExportTest :: FilePath -> SpecWith ()
+mkImportExportTest fname = it ("import/export example, " ++ fname) $ do
+    content <- getExample fname
+
+    go $ parseOnly (OrgParse.parseDocument allowedTags) content
+  where
+    go (Left err)  = expectationFailure $ "Example could not be parsed: " ++ err
+    go (Right doc) = do
+        exportedM <- runDb' $ do
+            docId <- OrgDb.importDocument (T.pack fname) doc
+
+            OrgDb.exportDocument docId
+
+        exportedM `shouldBe` (Just doc)
