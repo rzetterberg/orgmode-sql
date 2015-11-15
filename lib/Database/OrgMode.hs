@@ -242,9 +242,10 @@ exportDocument docId = DbDocument.get docId >>= go
         return (Just res)
 
 {-|
+Exports a complete heading from the database
 -}
 exportHeading :: (MonadIO m)
-              => Entity Db.Heading            -- ^ ID of document owner
+              => Entity Db.Heading            -- ^ ID of heading
               -> ReaderT SqlBackend m Heading -- ^ Complete heading
 exportHeading (Entity hedId heading) = do
     plannings  <- exportPlannings hedId
@@ -268,6 +269,9 @@ exportHeading (Entity hedId heading) = do
                      , subHeadings = []
                      }
 
+{-|
+Exports plannings from database
+-}
 exportPlannings :: (MonadIO m)
                 => Key Db.Heading                 -- ^ ID of heading owner
                 -> ReaderT SqlBackend m Plannings -- ^ Complete plannings
@@ -281,6 +285,9 @@ exportPlannings hedId = do
               start  = utcToDateTime (Db.planningTime p)
           in (Db.planningKeyword p, tstamp)
 
+{-|
+Exports clocks from the database
+-}
 exportClocks :: (MonadIO m)
              => Key Db.Heading
              -> ReaderT SqlBackend m [(Maybe Timestamp, Maybe Duration)]
@@ -290,10 +297,12 @@ exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
         = let tstamp  = Timestamp start (Db.clockActive clock) endM
               start   = utcToDateTime (Db.clockStart clock)
               endM    = utcToDateTime <$> Db.clockEnd clock
-              (m, _)  = (Db.clockDuration clock) `divMod` 60
-              (h, m') = m `divMod` 60
-          in (Just tstamp, Just (h, m'))
+              hourMin = secsToClock (Db.clockDuration clock)
+          in (Just tstamp, Just hourMin)
 
+{-|
+Exports properties from the database
+-}
 exportProperties :: (MonadIO m)
                  => Key Db.Heading
                  -> ReaderT SqlBackend m Properties
@@ -302,6 +311,9 @@ exportProperties hedId =   DbProperty.getByHeading hedId
   where
     fromDb (Entity _ p) = (Db.propertyKey p, Db.propertyValue p)
 
+{-|
+Exports tags from the database
+-}
 exportTags :: (MonadIO m)
            => Key Db.Heading
            -> ReaderT SqlBackend m [Tag]
@@ -320,27 +332,38 @@ utcToDateTime :: UTCTime
               -> DateTime
 utcToDateTime UTCTime{..}
     = DateTime { yearMonthDay = ymd
-               , dayName      = Just weekDayLit
-               , hourMinute   = Just (hours, minutes2)
+               , dayName      = Just (weekDayToLit weekDay)
+               , hourMinute   = Just (secsToClock seconds)
                , repeater     = Nothing
                , delay        = Nothing
                }
   where
-    (seconds, _)      = properFraction utctDayTime
-    (minutes, _)      = seconds `divMod` 60
-    (hours, minutes2) = minutes `divMod` 60
-    ymd               = YMD' $ YearMonthDay (fromInteger y) m d
-    (y, m, d)         = T.toGregorian utctDay
-    (_, _, weekDay)   = T.toWeekDate utctDay
-    weekDayLit
-        = case weekDay of
-            1 -> "Mon"
-            2 -> "Tue"
-            3 -> "Wed"
-            4 -> "Thu"
-            5 -> "Fri"
-            6 -> "Sat"
-            _ -> "Sun"
+    ymd                = YMD' $ YearMonthDay (fromInteger year) month day
+    (seconds, _)       = properFraction utctDayTime
+    (year, month, day) = T.toGregorian utctDay
+    (_, _, weekDay)    = T.toWeekDate utctDay
+
+{-|
+Helper to convert seconds into a clock (hour and minute).
+-}
+secsToClock :: (Integral a) => a -> (a, a)
+secsToClock seconds
+    = let (minutes, _)         = seconds `divMod` 60
+          (hours, restMinutes) = minutes `divMod` 60
+      in  (hours, restMinutes)
+
+{-|
+Helper to convert a week day number into a literal representation
+that orgmode-parse uses.
+-}
+weekDayToLit :: Int -> Text
+weekDayToLit 1 = "Mon"
+weekDayToLit 2 = "Tue"
+weekDayToLit 3 = "Wed"
+weekDayToLit 4 = "Thu"
+weekDayToLit 5 = "Fri"
+weekDayToLit 6 = "Sat"
+weekDayToLit _ = "Sun"
 
 {-|
 Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
