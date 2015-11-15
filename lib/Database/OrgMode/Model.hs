@@ -1,6 +1,6 @@
 module Database.OrgMode.Model where
 
-import           Data.OrgMode.Parse.Types (Priority(..))
+import           Data.OrgMode.Parse.Types (Priority(..), PlanningKeyword(..))
 
 import           Database.OrgMode.Import
 import           Database.OrgMode.Marshall()
@@ -47,7 +47,7 @@ Property
 
 Planning
     heading HeadingId
-    keyword Text
+    keyword PlanningKeyword
     time TimestampId
     deriving Show
 

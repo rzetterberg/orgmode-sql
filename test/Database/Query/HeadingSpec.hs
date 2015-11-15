@@ -5,14 +5,9 @@ parsing and importing the data to the database works as expected.
 
 module Database.Query.HeadingSpec (spec) where
 
-import           Data.Time.Clock (getCurrentTime)
 import           TestImport
 
-import           Database.OrgMode.Model
-import qualified Database.OrgMode.Query.Document as Document
 import qualified Database.OrgMode.Query.Heading as Heading
-import qualified Database.OrgMode.Query.Tag as Tag
-import qualified Database.OrgMode.Query.Clock as Clock
 
 -------------------------------------------------------------------------------
 

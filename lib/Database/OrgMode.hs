@@ -28,7 +28,6 @@ module Database.OrgMode where
 import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
-import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
 import           Data.Time.Calendar (fromGregorian)
 import           Data.Time.Clock (UTCTime(..), secondsToDiffTime, diffUTCTime)
@@ -97,7 +96,7 @@ org-mode have a tree structure each 'Heading' can contain an ID to it's parent.
 Headings belong to a specific document that's why the ID is needed when
 inserting a 'Heading' into the database.
 
-Note: this function recurses on each 'subHeadings' found.
+NB: this function recurses on each 'subHeadings' found.
 -}
 importHeading :: (MonadIO m)
               => Key Db.Document                       -- ^ ID of document owner
@@ -111,7 +110,6 @@ importHeading docId parentM Heading{..} = do
     mapM_ (importClock headingId) sectionClocks
     mapM_ (importPlanning headingId) (HM.toList pmap)
     mapM_ (importProperty headingId) (HM.toList sectionProperties)
-
     mapM_ (importHeading docId (Just headingId)) subHeadings
 
     return headingId
@@ -129,6 +127,9 @@ importHeading docId parentM Heading{..} = do
                              , headingParagraph = sectionParagraph
                              }
 
+{-|
+Imports the given tag into the database and returns the id it was given.
+-}
 importTag :: (MonadIO m)
           => Key Db.Heading
           -> Tag
@@ -175,9 +176,7 @@ importPlanning :: (MonadIO m)
 importPlanning headingId (kword, tstamp) = do
     tstampId <- importTimestamp tstamp
 
-    DbPlanning.add headingId kwordT tstampId
-  where
-    kwordT = T.pack (show kword)
+    DbPlanning.add headingId kword tstampId
 
 importProperty :: (MonadIO m)
                => Key Db.Heading
