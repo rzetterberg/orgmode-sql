@@ -1,0 +1,226 @@
+#+options: num:nil
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.min.css" />
+
+* Tasks 1
+** TODO Something 1
+   CLOCK: [2015-11-19 Thu 16:38]--[2015-11-19 Thu 17:19] =>  0:41
+** TODO Something 2                                                 :support:
+   CLOCK: [2015-11-17 Tue 13:32]--[2015-11-17 Tue 13:40] =>  0:08
+** TODO Something 3                                                     :org:
+   CLOCK: [2015-11-19 Thu 08:33]--[2015-11-19 Thu 08:55] =>  0:22
+   CLOCK: [2015-11-18 Wed 13:49]--[2015-11-18 Wed 15:26] =>  1:37
+   CLOCK: [2015-11-18 Wed 09:04]--[2015-11-18 Wed 09:14] =>  0:10
+   CLOCK: [2015-11-17 Tue 11:32]--[2015-11-17 Tue 12:10] =>  0:38
+   CLOCK: [2015-11-17 Tue 08:13]--[2015-11-17 Tue 08:59] =>  0:46
+   CLOCK: [2015-11-16 Mon 13:00]--[2015-11-16 Mon 13:30] =>  0:30
+   CLOCK: [2015-11-16 Mon 08:50]--[2015-11-16 Mon 09:18] =>  0:28
+   CLOCK: [2015-11-13 Fri 15:53]--[2015-11-13 Fri 16:33] =>  0:40
+   CLOCK: [2015-11-13 Fri 08:23]--[2015-11-13 Fri 08:48] =>  0:25
+   CLOCK: [2015-11-12 Thu 10:32]--[2015-11-12 Thu 10:40] =>  0:08
+   CLOCK: [2015-11-12 Thu 08:20]--[2015-11-12 Thu 08:40] =>  0:20
+   CLOCK: [2015-11-11 Wed 08:34]--[2015-11-11 Wed 09:37] =>  1:03
+   CLOCK: [2015-11-10 Tue 13:15]--[2015-11-10 Tue 13:53] =>  0:38
+   CLOCK: [2015-11-10 Tue 10:15]--[2015-11-10 Tue 12:16] =>  2:01
+   CLOCK: [2015-11-10 Tue 09:40]--[2015-11-10 Tue 09:45] =>  0:05
+   CLOCK: [2015-11-10 Tue 08:08]--[2015-11-10 Tue 08:55] =>  0:47
+   CLOCK: [2015-11-09 Mon 12:39]--[2015-11-09 Mon 13:31] =>  0:52
+   CLOCK: [2015-11-09 Mon 08:03]--[2015-11-09 Mon 08:07] =>  0:04
+   CLOCK: [2015-11-05 Thu 07:55]--[2015-11-05 Thu 07:58] =>  0:03
+   CLOCK: [2015-11-04 Wed 08:00]--[2015-11-04 Wed 08:13] =>  0:13
+   CLOCK: [2015-11-03 Tue 08:15]--[2015-11-03 Tue 08:48] =>  0:33
+   CLOCK: [2015-11-02 Mon 16:33]--[2015-11-02 Mon 16:35] =>  0:02
+   CLOCK: [2015-11-02 Mon 07:38]--[2015-11-02 Mon 08:01] =>  0:23
+   CLOCK: [2015-10-30 Fri 16:22]--[2015-10-30 Fri 16:50] =>  0:28
+   CLOCK: [2015-10-30 Fri 08:07]--[2015-10-30 Fri 08:28] =>  0:21
+   CLOCK: [2015-10-29 Thu 08:33]--[2015-10-29 Thu 08:47] =>  0:14
+   CLOCK: [2015-10-28 Wed 13:17]--[2015-10-28 Wed 16:53] =>  3:36
+   CLOCK: [2015-10-28 Wed 07:44]--[2015-10-28 Wed 07:57] =>  0:13
+   CLOCK: [2015-10-27 Tue 14:21]--[2015-10-27 Tue 14:22] =>  0:01
+   CLOCK: [2015-10-27 Tue 13:04]--[2015-10-27 Tue 13:15] =>  0:11
+   CLOCK: [2015-10-27 Tue 10:42]--[2015-10-27 Tue 11:36] =>  0:54
+   CLOCK: [2015-10-27 Tue 10:32]--[2015-10-27 Tue 10:34] =>  0:02
+   CLOCK: [2015-10-27 Tue 08:10]--[2015-10-27 Tue 08:42] =>  0:32
+   CLOCK: [2015-10-26 Mon 07:37]--[2015-10-26 Mon 07:45] =>  0:08
+   CLOCK: [2015-10-23 Fri 07:50]--[2015-10-23 Fri 08:54] =>  1:04
+   CLOCK: [2015-10-22 Thu 14:25]--[2015-10-22 Thu 14:43] =>  0:18
+   CLOCK: [2015-10-20 Tue 07:55]--[2015-10-20 Tue 08:12] =>  0:17
+   CLOCK: [2015-10-19 Mon 07:50]--[2015-10-19 Mon 08:14] =>  0:24
+   CLOCK: [2015-10-16 Fri 08:50]--[2015-10-16 Fri 08:52] =>  0:02
+   CLOCK: [2015-10-16 Fri 07:55]--[2015-10-16 Fri 08:18] =>  0:23
+   CLOCK: [2015-10-15 Thu 07:57]--[2015-10-15 Thu 08:29] =>  0:32
+   CLOCK: [2015-10-14 Wed 10:57]--[2015-10-14 Wed 11:01] =>  0:04
+   CLOCK: [2015-10-14 Wed 08:00]--[2015-10-14 Wed 08:20] =>  0:20
+** TODO Something 3                                              :intern_dev:
+** TODO Something 4                                                     :org:
+*** DONE Something 5                                                :meeting:
+   CLOSED: [2015-11-18 Wed 09:04]
+   CLOCK: [2015-11-18 Wed 08:04]--[2015-11-18 Wed 09:04] =>  1:00
+**** DONE Something 6                                           :meeting:req:
+   CLOSED: [2015-11-17 Tue 08:28] DEADLINE: <2015-11-18 Wed>
+   CLOCK: [2015-11-16 Mon 15:15]--[2015-11-16 Mon 17:00] =>  1:45
+   CLOCK: [2015-11-16 Mon 14:26]--[2015-11-16 Mon 14:28] =>  0:02
+   CLOCK: [2015-11-16 Mon 13:30]--[2015-11-16 Mon 14:15] =>  0:45
+   CLOCK: [2015-11-11 Wed 11:40]--[2015-11-11 Wed 12:01] =>  0:21
+   CLOCK: [2015-11-11 Wed 10:20]--[2015-11-11 Wed 11:32] =>  1:12
+*** DONE Something 7                                                :support:
+   CLOSED: [2015-11-16 Mon 16:10] SCHEDULED: <2015-11-13 Fri> DEADLINE: <2015-11-13 Fri>
+   CLOCK: [2015-11-13 Fri 11:34]--[2015-11-13 Fri 11:50] =>  0:16
+** DONE Something 8                                                     :org:
+   CLOSED: [2015-11-16 Mon 15:15]
+   CLOCK: [2015-11-16 Mon 10:57]--[2015-11-16 Mon 12:00] =>  1:03
+
+** DONE Something 9                                                 :support:
+   CLOSED: [2015-11-16 Mon 14:26]
+   CLOCK: [2015-11-16 Mon 14:15]--[2015-11-16 Mon 14:26] =>  0:11
+
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque venenatis,
+   velit vel condimentum imperdiet, velit ipsum ultricies magna, laoreet pulvinar
+   enim neque a magna. Donec consectetur, lacus quis viverra porta, nisl ipsum.
+** DONE Something 10                                                :meeting:
+   CLOSED: [2015-11-13 Fri 08:23] SCHEDULED: <2015-11-12 Thu> DEADLINE: <2015-11-12 Thu>
+   CLOCK: [2015-11-12 Thu 16:30]--[2015-11-12 Thu 17:20] =>  0:50
+
+** DONE Something 11                                                :meeting:
+   CLOSED: [2015-11-16 Mon 09:06]
+   CLOCK: [2015-11-13 Fri 15:18]--[2015-11-13 Fri 15:53] =>  0:35
+** DONE Something 12                                                :meeting:
+   CLOSED: [2015-11-11 Wed 08:33]
+   CLOCK: [2015-11-10 Tue 16:30]--[2015-11-10 Tue 17:16] =>  0:46
+
+** DONE Something 13                                            :meeting:req:
+   CLOSED: [2015-11-11 Wed 10:40] SCHEDULED: <2015-11-11 Wed> DEADLINE: <2015-11-11 Wed>
+   CLOCK: [2015-11-11 Wed 09:37]--[2015-11-11 Wed 10:20] =>  1:03
+
+** DONE Something 14                                             :intern_dev:
+   CLOSED: [2015-11-10 Tue 10:15] SCHEDULED: <2015-11-10 Tue> DEADLINE: <2015-11-10 Tue>
+   CLOCK: [2015-11-10 Tue 09:45]--[2015-11-10 Tue 10:15] =>  0:30
+
+** DONE Something 15                                                :meeting:
+   CLOSED: [2015-11-06 Fri 15:54]
+   CLOCK: [2015-11-06 Fri 15:09]--[2015-11-06 Fri 15:54] =>  0:45
+
+** DONE Something 16                                                    :req:
+   CLOSED: [2015-11-06 Fri 09:38] SCHEDULED: <2015-11-06 Fri> DEADLINE: <2015-11-06 Fri>
+   CLOCK: [2015-11-06 Fri 09:01]--[2015-11-06 Fri 09:38] =>  0:37
+
+   Nope.
+*** DONE Something 17                                               :meeting:
+   CLOSED: [2015-11-06 Fri 09:01]
+   CLOCK: [2015-11-05 Thu 16:30]--[2015-11-05 Thu 16:58] =>  0:28
+
+**** DONE Something 18                                              :meeting:
+   CLOSED: [2015-11-05 Thu 08:56] SCHEDULED: <2015-11-05 Thu> DEADLINE: <2015-11-05 Thu>
+   CLOCK: [2015-11-05 Thu 08:37]--[2015-11-05 Thu 08:56] =>  0:19
+** DONE Something 19                                                :meeting:
+   CLOSED: [2015-11-03 Tue 17:21] SCHEDULED: <2015-11-03 Tue> DEADLINE: <2015-11-03 Tue>
+   CLOCK: [2015-11-03 Tue 16:30]--[2015-11-03 Tue 17:21] =>  0:51
+** DONE Something 20                                                :meeting:
+   CLOSED: [2015-11-02 Mon 07:48]
+   CLOCK: [2015-10-30 Fri 15:07]--[2015-10-30 Fri 15:30] =>  0:23
+
+** DONE Something 21                                                :meeting:
+   CLOSED: [2015-10-30 Fri 08:07]
+   CLOCK: [2015-10-29 Thu 16:30]--[2015-10-29 Thu 17:10] =>  0:40
+
+** DONE Something 22                                                :meeting:
+   CLOSED: [2015-10-28 Wed 07:44] SCHEDULED: <2015-10-27 Tue> DEADLINE: <2015-10-27 Tue>
+   CLOCK: [2015-10-27 Tue 16:30]--[2015-10-27 Tue 17:14] =>  0:44
+
+*** DONE Something 23                                               :meeting:
+   CLOSED: [2015-10-27 Tue 08:33]
+   CLOCK: [2015-10-26 Mon 08:30]--[2015-10-26 Mon 08:50] =>  0:20
+
+**** DONE Something 24                                              :meeting:
+   CLOSED: [2015-10-23 Fri 15:33]
+   CLOCK: [2015-10-23 Fri 15:00]--[2015-10-23 Fri 15:33] =>  0:33
+
+**** DONE Something 25                                              :meeting:
+   CLOSED: [2015-10-20 Tue 17:37]
+   CLOCK: [2015-10-20 Tue 16:30]--[2015-10-20 Tue 17:37] =>  1:07
+**** DONE Something 26                                       :support:deploy:
+   CLOSED: [2015-10-20 Tue 11:38] DEADLINE: <2015-10-20 Tue> SCHEDULED: <2015-10-20 Tue>
+   CLOCK: [2015-10-20 Tue 11:26]--[2015-10-20 Tue 11:38] =>  0:12
+
+***** DONE Something 27                                                 :org:
+   CLOSED: [2015-10-16 Fri 15:25]
+   CLOCK: [2015-10-16 Fri 15:09]--[2015-10-16 Fri 15:19] =>  0:10
+
+** DONE Something 28                                                    :org:
+   CLOSED: [2015-10-16 Fri 08:50] SCHEDULED: <2015-10-16 Fri> DEADLINE: <2015-10-16 Fri>
+   CLOCK: [2015-10-16 Fri 08:22]--[2015-10-16 Fri 08:50] =>  0:28
+
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+** DONE Something 29                                                    :org:
+   CLOSED: [2015-10-14 Wed 10:57] SCHEDULED: <2015-10-14 Wed> DEADLINE: <2015-10-14 Wed>
+   CLOCK: [2015-10-14 Wed 10:52]--[2015-10-14 Wed 10:57] =>  0:05
+
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque venenatis,
+   velit vel condimentum imperdiet.
+
+** DONE Something 30
+   CLOSED: [2015-10-13 Tue 17:24] SCHEDULED: <2015-10-13 Tue> DEADLINE: <2015-10-13 Tue>
+   CLOCK: [2015-10-13 Tue 16:32]--[2015-10-13 Tue 17:24] =>  0:52
+
+** DONE Something 31                                                    :org:
+   CLOSED: [2015-10-13 Tue 14:13] SCHEDULED: <2015-10-13 Tue> DEADLINE: <2015-10-13 Tue>
+   CLOCK: [2015-10-13 Tue 08:00]--[2015-10-13 Tue 08:23] =>  0:23
+
+** DONE Something 32                                                    :org:
+   CLOSED: [2015-10-12 Mon 16:54] SCHEDULED: <2015-10-12 Mon> DEADLINE: <2015-10-12 Mon>
+   CLOCK: [2015-10-12 Mon 16:37]--[2015-10-12 Mon 17:00] =>  0:23
+   CLOCK: [2015-10-12 Mon 11:05]--[2015-10-12 Mon 11:12] =>  0:07
+   CLOCK: [2015-10-12 Mon 08:07]--[2015-10-12 Mon 08:11] =>  0:04
+
+** DONE Something 33                                     :support:office:
+   CLOSED: [2015-10-12 Mon 10:37] SCHEDULED: <2015-10-12 Mon> DEADLINE: <2015-10-12 Mon>
+   CLOCK: [2015-10-12 Mon 10:30]--[2015-10-12 Mon 10:37] =>  0:07
+** DONE Something 34
+   CLOSED: [2015-10-12 Mon 08:07] SCHEDULED: <2015-10-12 Mon> DEADLINE: <2015-10-12 Mon>
+   CLOCK: [2015-10-12 Mon 07:55]--[2015-10-12 Mon 08:07] =>  0:12
+
+** DONE Something 35
+   CLOSED: [2015-10-09 Fri 07:54] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 16:24]--[2015-10-08 Thu 17:10] =>  0:46
+
+*** DONE Something 36                                                   :org:
+   CLOSED: [2015-10-08 Thu 16:23] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 10:42]--[2015-10-08 Thu 11:01] =>  0:19
+   CLOCK: [2015-10-08 Thu 08:41]--[2015-10-08 Thu 08:47] =>  0:06
+
+**** DONE Something 37                                                  :org:
+   CLOSED: [2015-10-08 Thu 15:06] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 13:53]--[2015-10-08 Thu 14:30] =>  0:37
+
+* DONE Tasks 2                                                          :org:
+   CLOSED: [2015-10-08 Thu 15:36] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 14:30]--[2015-10-08 Thu 15:36] =>  1:06
+** DONE Something 38                                               :research:
+   CLOSED: [2015-10-08 Thu 12:15] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 11:01]--[2015-10-08 Thu 11:58] =>  0:57
+
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+** DONE Something 39
+   CLOSED: [2015-10-08 Thu 10:43] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 09:27]--[2015-10-08 Thu 10:42] =>  1:15
+** DONE Something 40                                                :support:
+   CLOSED: [2015-10-08 Thu 09:05] SCHEDULED: <2015-10-08 Thu> DEADLINE: <2015-10-08 Thu>
+   CLOCK: [2015-10-08 Thu 09:02]--[2015-10-08 Thu 09:05] =>  0:03
+
+** DONE Something 41                                                    :org:
+   SCHEDULED: <2015-10-07 Wed> DEADLINE: <2015-10-07 Wed>
+   CLOCK: [2015-10-07 Wed 11:13]--[2015-10-07 Wed 11:14] =>  0:01
+   CLOCK: [2015-10-07 Wed 10:43]--[2015-10-07 Wed 10:56] =>  0:13
+   CLOCK: [2015-10-07 Wed 07:45]--[2015-10-07 Wed 08:23] =>  0:38
+
+** DONE Something 42                                                :meeting:
+   CLOSED: [2015-10-06 Tue 16:55] SCHEDULED: <2015-10-06 Tue> DEADLINE: <2015-10-06 Tue>
+   CLOCK: [2015-10-06 Tue 15:50]--[2015-10-06 Tue 16:55] =>  1:05
+
+** DONE Something 43                                                   :org:
+   CLOSED: [2015-10-06 Tue 11:40] SCHEDULED: <2015-10-06 Tue> DEADLINE: <2015-10-06 Tue>
+   CLOCK: [2015-10-06 Tue 11:34]--[2015-10-06 Tue 11:39] =>  0:05
+
+** DONE Something 44                                                    :org:
+   CLOSED: [2015-10-06 Tue 08:09] SCHEDULED: <2015-10-06 Tue> DEADLINE: <2015-10-06 Tue>
+   CLOCK: [2015-10-06 Tue 07:50]--[2015-10-06 Tue 08:10] =>  0:20
