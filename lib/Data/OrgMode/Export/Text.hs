@@ -5,22 +5,34 @@ module Data.OrgMode.Export.Text where
 import           Data.OrgMode.Parse.Types
 import           Data.Text (Text)
 import           Data.Text.Buildable
-import           Data.Text.Lazy.Builder
 import           Data.Text.Format (Only(..))
+import           Data.Text.Lazy.Builder
+import           Prelude
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Text as T
 import qualified Data.Text.Format as F
 import qualified Data.Text.Lazy as TL
-import qualified Data.Text as T
-import qualified Data.HashMap.Strict as HM
-import           Prelude
 
 -------------------------------------------------------------------------------
 
 export :: Document -> Text
 export = TL.toStrict . toLazyText . build
 
-stripLinebreak :: Text -> Text
-stripLinebreak a = maybe a id $
-    T.stripSuffix "\n" a >>= T.stripPrefix "\n"
+buildIntPair :: (Integral a, Buildable a) => a -> Builder
+buildIntPair v
+    | v > 9     = build v
+    | otherwise = build '0' `mappend` build v
+
+sectionEmpty :: Section -> Bool
+sectionEmpty Section{..} =  HM.null plns
+                         && HM.null sectionProperties
+                         && null sectionClocks
+                         && sectionParagraph == ""
+  where
+    (Plns plns) = sectionPlannings
+
+pad :: Builder
+pad = fromText "   "
 
 -------------------------------------------------------------------------------
 
@@ -28,42 +40,57 @@ instance Buildable Document where
     build Document{..}
         = let text = if documentText == ""
                        then mempty
-                       else fromText documentText
+                       else fromText documentText `mappend` singleton '\n'
           in text `mappend` build documentHeadings
 
 instance Buildable [Heading] where
     build []     = mempty
     build (h:[]) = build h
-    build (h:hs) = build h `mappend` singleton '\n' `mappend` build hs
+    build (h:hs)
+        | null (subHeadings h) = build h `mappend` singleton '\n' `mappend` build hs
+        | otherwise            = build h `mappend` build hs
 
 instance Buildable Heading where
     build Heading{..}
-        = F.build "{} {} {} {} :{}:\n{}\n{}"
-          ( build level
-          , build keyword
-          , build priority
-          , build title
-          , build tags
-          , build section
-          , build subHeadings
-          )
+        = mconcat [ build level
+                  , singleton ' '
+                  , buildSpaceM keyword
+                  , buildSpaceM priority
+                  , build title
+                  , buildTags tags
+                  , buildSection section
+                  , buildSubs subHeadings
+                  ]
+      where
+        buildSpaceM Nothing  = mempty
+        buildSpaceM (Just a) = build a `mappend` singleton ' '
+        buildTags [] = mempty
+        buildTags ts = F.build " :{}:" $ Only (build ts)
+        buildSection sec
+            | sectionEmpty sec = mempty
+            | otherwise        = singleton '\n' `mappend` build section
+        buildSubs []   = mempty
+        buildSubs subs = singleton '\n' `mappend` build subs
 
 instance Buildable Section where
     build Section{..}
-        = F.build "{}{}{}{}"
-          ( build sectionPlannings
-          , build sectionClocks
-          , build sectionProperties
-          , build (stripLinebreak sectionParagraph)
-          )
+        = mconcat [ build sectionPlannings
+                  , build sectionClocks
+                  , build sectionProperties
+                  , buildParagraph (T.strip sectionParagraph)
+                  ]
+      where
+        buildParagraph p
+            | T.null p  = mempty
+            | otherwise = pad `mappend` build p
 
 instance Buildable Plannings where
     build (Plns hmap) = case (HM.toList hmap) of
         [] -> mempty
-        ls -> fromText "  " `mappend` build ls `mappend` singleton '\n'
+        ls -> pad `mappend` build ls `mappend` singleton '\n'
 
 instance Buildable Properties where
-    build _ = build ("" :: Text)
+    build _ = mempty
 
 instance Buildable [(PlanningKeyword, Timestamp)] where
     build []     = mempty
@@ -86,8 +113,9 @@ instance Buildable [(Maybe Timestamp, Maybe Duration)] where
 instance Buildable (Maybe Timestamp, Maybe Duration) where
     build (Nothing, _) = mempty
     build (Just tstamp, durM)
-        = F.build "  CLOCK: {}{}{}"
-          ( buildClockTime tsTime
+        = F.build "{}CLOCK: {}{}{}"
+          ( pad
+          , buildClockTime tsTime
           , buildEnd tsEndTime
           , buildDur durM tsEndTime
           )
@@ -103,9 +131,9 @@ instance Buildable (Maybe Timestamp, Maybe Duration) where
 instance Buildable DateTime where
     build DateTime{..}
         = F.build "{}-{}-{}{}{}"
-          ( build year
-          , build month
-          , build day
+          ( buildIntPair year
+          , buildIntPair month
+          , buildIntPair day
           , buildDayname dayName
           , buildHourMinute hourMinute
           )
@@ -117,7 +145,7 @@ instance Buildable DateTime where
          (YMD' (YearMonthDay year month day)) = yearMonthDay
 
 instance Buildable (Int, Int) where
-    build (h, m) = F.build "{}:{}" (build h, build m)
+    build (h, m) = F.build "{}:{}" (buildIntPair h, buildIntPair m)
 
 instance Buildable Level where
     build (Level len) = build $ TL.replicate (fromIntegral len) "*"

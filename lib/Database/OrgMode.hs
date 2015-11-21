@@ -53,6 +53,7 @@ module Database.OrgMode where
 
 import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
+import           Data.Text (strip, append)
 import           Data.Time.Clock (UTCTime(..))
 import           Database.Persist (Entity(..))
 import qualified Data.HashMap.Strict as HM
@@ -60,7 +61,6 @@ import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Time.Calendar as T
 import qualified Data.Time.Calendar.WeekDate as T
 import qualified Data.Time.Clock as T
-import qualified Data.Text.IO as TIO
 
 import           Database.OrgMode.Import
 import qualified Database.OrgMode.Model as Db
@@ -93,7 +93,8 @@ textImportDocument docName keywords orgContent =
         Left  err -> return (Left err)
         Right doc -> Right `liftM` importDocument docName doc
   where
-    result = parseOnly (OrgParse.parseDocument keywords) orgContent
+    result = parseOnly (OrgParse.parseDocument keywords)
+                       (append orgContent "\n")
 
 -------------------------------------------------------------------------------
 -- * Plain text export
@@ -104,15 +105,7 @@ Exports all data from the database to a plain text org-mode document
 textExportDocument :: (MonadIO m)
                    => Key Db.Document
                    -> ReaderT SqlBackend m (Maybe Text)
---textExportDocument docId = (fmap TextExport.export) `liftM` exportDocument docId
-textExportDocument docId = do
-    res <- (fmap TextExport.export) `liftM` exportDocument docId
-
-    let (Just res') = res
-
-    liftIO $ TIO.putStr res'
-
-    return res
+textExportDocument docId = (fmap TextExport.export) `liftM` exportDocument docId
 
 -------------------------------------------------------------------------------
 -- * Orgmode-parse data import
@@ -131,7 +124,7 @@ importDocument :: (MonadIO m)
                -> Document                               -- ^ Parsed document
                -> ReaderT SqlBackend m (Key Db.Document) -- ^ ID of created doc
 importDocument docName Document{..} = do
-    docId <- DbDocument.add docName documentText
+    docId <- DbDocument.add docName (strip documentText)
 
     mapM_ (importHeading docId Nothing) documentHeadings
 
@@ -172,7 +165,7 @@ importHeading docId parentM Heading{..} = do
                              , headingKeyword   = kwordM
                              , headingPriority  = priority
                              , headingTitle     = title
-                             , headingParagraph = sectionParagraph
+                             , headingParagraph = strip sectionParagraph
                              }
 
 {-|
@@ -377,7 +370,6 @@ secsToClock seconds
 
 {-|
 Helper to convert a week day number into a literal representation
-that orgmode-parse uses.
 -}
 weekDayToLit :: Int -> Text
 weekDayToLit 1 = "Mon"

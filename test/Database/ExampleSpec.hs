@@ -5,9 +5,7 @@ parsing and importing the data to the database works as expected.
 
 module Database.ExampleSpec (spec) where
 
-import           Data.Attoparsec.Text (parseOnly)
 import           TestImport
-import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Text as T
 
 import qualified Database.OrgMode as OrgDb
@@ -31,10 +29,15 @@ spec =
       mkDurationTest "1_clock_2_hours.org" 7200
       mkDurationTest "2_clocks_45_minutes.org" 2700
 
-      mkExportTest "1_clock_2_hours_2_plannings.org"
-      mkExportTest "1_section_2_subs.org"
-
+      mkTextExportTest "1_section.org"
+      mkTextExportTest "2_sections.org"
+      mkTextExportTest "2_sections_1_tag.org"
+      mkTextExportTest "4_sections_3_tags.org"
+      mkTextExportTest "4_sections_3_tags_1_clock.org"
+      mkTextExportTest "4_sections_3_tags_2_clocks.org"
+      mkTextExportTest "1_section_2_subs.org"
       mkTextExportTest "all_data.org"
+      mkTextExportTest "45_sections_multi_clocks_tree.org"
 
 allowedTags :: [Text]
 allowedTags = ["DONE", "TODO"]
@@ -73,27 +76,6 @@ mkLengthTest fname hedLen tagLen clockLen = it ("length example, " ++ fname) $ d
     length headings `shouldBe` hedLen
     length tags `shouldBe` tagLen
     length clocks `shouldBe` clockLen
-
-{-|
-Creates a generic test using an example file that is first imported and then
-exported as orgmode-parse data. The test checks that the export produced a
-orgmode-parse 'Document' successfully and that it is equal to the parsed
-'Document' input.
--}
-mkExportTest :: FilePath -> SpecWith ()
-mkExportTest fname = it ("export example, " ++ fname) $ do
-    content <- getExample fname
-
-    go $ parseOnly (OrgParse.parseDocument allowedTags) content
-  where
-    go (Left err)  = expectationFailure $ "Example could not be parsed: " ++ err
-    go (Right doc) = do
-        docM <- runDb $ do
-            docId <- OrgDb.importDocument (T.pack fname) doc
-
-            OrgDb.exportDocument docId
-
-        docM `shouldBe` (Just doc)
 
 {-|
 Creates a generic test using an example file that is first imported and then
