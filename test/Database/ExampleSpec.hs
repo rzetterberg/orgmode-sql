@@ -32,6 +32,7 @@ spec =
       mkDurationTest "2_clocks_45_minutes.org" 2700
 
       mkImportExportTest "1_clock_2_hours_2_plannings.org"
+      mkImportExportTest "1_section_2_subs.org"
 
 allowedTags :: [Text]
 allowedTags = ["DONE", "TODO"]

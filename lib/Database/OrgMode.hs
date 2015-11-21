@@ -234,7 +234,7 @@ exportDocument docId = DbDocument.get docId >>= go
   where
     go Nothing    = return Nothing
     go (Just doc) = do
-        dbHeadings <- DbHeading.getByDocument docId
+        dbHeadings <- DbHeading.getRootsByDocument docId
         headings   <- mapM exportHeading dbHeadings
 
         let res = Document (Db.documentText doc) headings
@@ -242,16 +242,18 @@ exportDocument docId = DbDocument.get docId >>= go
         return (Just res)
 
 {-|
-Exports a complete heading from the database
+Exports a complete heading from the database in a tuple with the database ID
+and the ID of it's parent.
 -}
 exportHeading :: (MonadIO m)
-              => Entity Db.Heading            -- ^ ID of heading
-              -> ReaderT SqlBackend m Heading -- ^ Complete heading
+              => Entity Db.Heading
+              -> ReaderT SqlBackend m Heading
 exportHeading (Entity hedId heading) = do
     plannings  <- exportPlannings hedId
     clocks     <- exportClocks hedId
     properties <- exportProperties hedId
     tags       <- exportTags hedId
+    subs       <- DbHeading.getChildren hedId >>= mapM exportHeading
 
     let sec = Section { sectionPlannings  = plannings
                       , sectionClocks     = clocks
@@ -259,15 +261,15 @@ exportHeading (Entity hedId heading) = do
                       , sectionParagraph  = Db.headingParagraph heading
                       }
 
-    return $ Heading { level       = Level (Db.headingLevel heading)
-                     , keyword     = StateKeyword <$> Db.headingKeyword heading
-                     , priority    = Db.headingPriority heading
-                     , title       = Db.headingTitle heading
-                     , stats       = Nothing
-                     , tags        = tags
-                     , section     = sec
-                     , subHeadings = []
-                     }
+    return Heading { level       = Level (Db.headingLevel heading)
+                   , keyword     = StateKeyword <$> Db.headingKeyword heading
+                   , priority    = Db.headingPriority heading
+                   , title       = Db.headingTitle heading
+                   , stats       = Nothing
+                   , tags        = tags
+                   , section     = sec
+                   , subHeadings = subs
+                   }
 
 {-|
 Exports plannings from database
