@@ -54,4 +54,4 @@ parseImport :: (MonadIO m)
             -> [Text]                  -- ^ Keywords to allow
             -> Text                    -- ^ org-mode document contents
             -> ReaderT SqlBackend m ()
-parseImport docName keywords = void . OrgDb.parseTextImport docName keywords
+parseImport docName keywords = void . OrgDb.textImportDocument docName keywords

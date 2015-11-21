@@ -3,10 +3,10 @@ module Main where
 import           Criterion.Main (defaultMain)
 import           Prelude
 
-import qualified Query.ImportExportBench as ImportExport
+import qualified Query.ExportBench as Export
 
 --------------------------------------------------------------------------------
 
 main :: IO ()
-main = defaultMain [ ImportExport.benches
+main = defaultMain [ Export.benches
                    ]

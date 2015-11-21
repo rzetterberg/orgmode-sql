@@ -31,8 +31,10 @@ spec =
       mkDurationTest "1_clock_2_hours.org" 7200
       mkDurationTest "2_clocks_45_minutes.org" 2700
 
-      mkImportExportTest "1_clock_2_hours_2_plannings.org"
-      mkImportExportTest "1_section_2_subs.org"
+      mkExportTest "1_clock_2_hours_2_plannings.org"
+      mkExportTest "1_section_2_subs.org"
+
+      mkTextExportTest "all_data.org"
 
 allowedTags :: [Text]
 allowedTags = ["DONE", "TODO"]
@@ -72,17 +74,47 @@ mkLengthTest fname hedLen tagLen clockLen = it ("length example, " ++ fname) $ d
     length tags `shouldBe` tagLen
     length clocks `shouldBe` clockLen
 
-mkImportExportTest :: FilePath -> SpecWith ()
-mkImportExportTest fname = it ("import/export example, " ++ fname) $ do
+{-|
+Creates a generic test using an example file that is first imported and then
+exported as orgmode-parse data. The test checks that the export produced a
+orgmode-parse 'Document' successfully and that it is equal to the parsed
+'Document' input.
+-}
+mkExportTest :: FilePath -> SpecWith ()
+mkExportTest fname = it ("export example, " ++ fname) $ do
     content <- getExample fname
 
     go $ parseOnly (OrgParse.parseDocument allowedTags) content
   where
     go (Left err)  = expectationFailure $ "Example could not be parsed: " ++ err
     go (Right doc) = do
-        exportedM <- runDb' $ do
+        docM <- runDb $ do
             docId <- OrgDb.importDocument (T.pack fname) doc
 
             OrgDb.exportDocument docId
 
-        exportedM `shouldBe` (Just doc)
+        docM `shouldBe` (Just doc)
+
+{-|
+Creates a generic test using an example file that is first imported and then
+exported as text. Then the exported text is parsed and imported. The test checks
+that the second import is successful and that it produces a 'Document' equal to
+the first parsed 'Document'.
+-}
+mkTextExportTest :: FilePath -> SpecWith ()
+mkTextExportTest fname = it ("export text example, " ++ fname) $ do
+    let fnameT = T.pack fname
+
+    origin <- getExample fname
+
+    (parsed1, parsed2) <- runDb $ do
+        (Right docId1) <- OrgDb.textImportDocument fnameT allowedTags origin
+        (Just parsed1) <- OrgDb.exportDocument docId1
+        (Just raw1)    <- OrgDb.textExportDocument docId1
+
+        (Right docId2) <- OrgDb.textImportDocument "test" allowedTags raw1
+        (Just parsed2) <- OrgDb.exportDocument docId2
+
+        return (parsed1, parsed2)
+
+    parsed2 `shouldBe` parsed1

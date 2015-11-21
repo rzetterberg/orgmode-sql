@@ -1,4 +1,4 @@
-module Query.ImportExportBench (benches) where
+module Query.ExportBench (benches) where
 
 import           BenchImport
 import           Criterion.Types
@@ -11,22 +11,22 @@ import qualified Database.OrgMode as OrgDb
 --------------------------------------------------------------------------------
 
 benches :: Benchmark
-benches = bgroup "Import/Export" [ benchSmallDoc
+benches = bgroup "Export" [ benchSmallDoc
                                  , benchMediumDoc
                                  , benchLargeDoc
                                  ]
 
 benchSmallDoc :: Benchmark
 benchSmallDoc = bench "small doc" $ whnfIO $ do
-    mkImportExportBench "1_section_2_subs.org"
+    mkExportBench "1_section_2_subs.org"
 
 benchMediumDoc :: Benchmark
 benchMediumDoc = bench "medium doc" $ whnfIO $ do
-    mkImportExportBench "4_sections_3_tags_2_clocks.org"
+    mkExportBench "4_sections_3_tags_2_clocks.org"
 
 benchLargeDoc :: Benchmark
 benchLargeDoc = bench "large doc" $ whnfIO $ do
-    mkImportExportBench "45_sections_multi_clocks_tree.org"
+    mkExportBench "45_sections_multi_clocks_tree.org"
 
 --------------------------------------------------------------------------------
 -- * Helpers
@@ -34,8 +34,8 @@ benchLargeDoc = bench "large doc" $ whnfIO $ do
 allowedTags :: [Text]
 allowedTags = ["DONE", "TODO"]
 
-mkImportExportBench :: FilePath -> IO ()
-mkImportExportBench fname = do
+mkExportBench :: FilePath -> IO ()
+mkExportBench fname = do
     content <- getExample fname
 
     go $ parseOnly (OrgParse.parseDocument allowedTags) content

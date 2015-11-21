@@ -60,6 +60,7 @@ import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Time.Calendar as T
 import qualified Data.Time.Calendar.WeekDate as T
 import qualified Data.Time.Clock as T
+import qualified Data.Text.IO as TIO
 
 import           Database.OrgMode.Import
 import qualified Database.OrgMode.Model as Db
@@ -70,23 +71,24 @@ import qualified Database.OrgMode.Query.TagRel as DbTagRel
 import qualified Database.OrgMode.Query.Clock as DbClock
 import qualified Database.OrgMode.Query.Planning as DbPlanning
 import qualified Database.OrgMode.Query.Property as DbProperty
+import qualified Data.OrgMode.Export.Text as TextExport
 
 -------------------------------------------------------------------------------
--- * Unparsed raw data import
+-- * Plain text import
 
 {-|
 Takes a strict 'Text' and tries to parse the document and import it to the
 database.
 
-Returns the database ID of the created document or the error message from
+Returns the document ID of the created document or the error message from
 the parser.
 -}
-parseTextImport :: (MonadIO m)
-                => Text                    -- ^ Name of the document
-                -> [Text]                  -- ^ Keywords to allow
-                -> Text                    -- ^ org-mode document contents
-                -> ReaderT SqlBackend m (Either String (Key Db.Document))
-parseTextImport docName keywords orgContent =
+textImportDocument :: (MonadIO m)
+                   => Text                    -- ^ Name of the document
+                   -> [Text]                  -- ^ Keywords to allow
+                   -> Text                    -- ^ org-mode document contents
+                   -> ReaderT SqlBackend m (Either String (Key Db.Document))
+textImportDocument docName keywords orgContent =
     case result of
         Left  err -> return (Left err)
         Right doc -> Right `liftM` importDocument docName doc
@@ -94,7 +96,26 @@ parseTextImport docName keywords orgContent =
     result = parseOnly (OrgParse.parseDocument keywords) orgContent
 
 -------------------------------------------------------------------------------
--- * Parsed data import
+-- * Plain text export
+
+{-|
+Exports all data from the database to a plain text org-mode document
+-}
+textExportDocument :: (MonadIO m)
+                   => Key Db.Document
+                   -> ReaderT SqlBackend m (Maybe Text)
+--textExportDocument docId = (fmap TextExport.export) `liftM` exportDocument docId
+textExportDocument docId = do
+    res <- (fmap TextExport.export) `liftM` exportDocument docId
+
+    let (Just res') = res
+
+    liftIO $ TIO.putStr res'
+
+    return res
+
+-------------------------------------------------------------------------------
+-- * Orgmode-parse data import
 
 {-|
 Takes a parsed document and it's name and inserts it into the database. The name
@@ -222,7 +243,7 @@ importProperty :: (MonadIO m)
 importProperty headingId (key, val) = DbProperty.add headingId key val
 
 -------------------------------------------------------------------------------
--- * Data export
+-- * Orgmode-parse data export
 
 {-|
 Exports a complete document along with it's headings from the database.

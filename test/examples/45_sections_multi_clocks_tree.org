@@ -6,7 +6,7 @@
    CLOCK: [2015-11-19 Thu 16:38]--[2015-11-19 Thu 17:19] =>  0:41
 ** TODO Something 2                                                 :support:
    CLOCK: [2015-11-17 Tue 13:32]--[2015-11-17 Tue 13:40] =>  0:08
-** TODO Something 3                                                     :org:
+** TODO [#A] Something 3                                                :org:
    CLOCK: [2015-11-19 Thu 08:33]--[2015-11-19 Thu 08:55] =>  0:22
    CLOCK: [2015-11-18 Wed 13:49]--[2015-11-18 Wed 15:26] =>  1:37
    CLOCK: [2015-11-18 Wed 09:04]--[2015-11-18 Wed 09:14] =>  0:10
@@ -80,7 +80,7 @@
    CLOSED: [2015-11-13 Fri 08:23] SCHEDULED: <2015-11-12 Thu> DEADLINE: <2015-11-12 Thu>
    CLOCK: [2015-11-12 Thu 16:30]--[2015-11-12 Thu 17:20] =>  0:50
 
-** DONE Something 11                                                :meeting:
+** DONE [#B] Something 11                                           :meeting:
    CLOSED: [2015-11-16 Mon 09:06]
    CLOCK: [2015-11-13 Fri 15:18]--[2015-11-13 Fri 15:53] =>  0:35
 ** DONE Something 12                                                :meeting:
@@ -99,7 +99,7 @@
    CLOSED: [2015-11-06 Fri 15:54]
    CLOCK: [2015-11-06 Fri 15:09]--[2015-11-06 Fri 15:54] =>  0:45
 
-** DONE Something 16                                                    :req:
+** DONE [#B] Something 16                                               :req:
    CLOSED: [2015-11-06 Fri 09:38] SCHEDULED: <2015-11-06 Fri> DEADLINE: <2015-11-06 Fri>
    CLOCK: [2015-11-06 Fri 09:01]--[2015-11-06 Fri 09:38] =>  0:37
 
