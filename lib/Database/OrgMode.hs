@@ -7,13 +7,26 @@ A library that parses org-mode documents, imports the data into an SQL database,
 provides the user with common queries on the data and functionality to export
 the data to different data formats.
 
-The current feature status of this library is:
+The current status of the first 1.0 release of this library is:
 
-- Parsing: 100%
-- Database creation: 100%
-- Common queries: 100%
-- Complex queries: 0%
-- Exporting: 0%
+> ╭────────────────────╮ ╭────────────────────╮
+> │ Parsing            │ │ Database creation  │
+> │▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄│ │▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄│
+> │▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│ │▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│
+> │               100% │ │               100% │
+> ╰────────────────────╯ ╰────────────────────╯
+> ╭────────────────────╮ ╭────────────────────╮
+> │ Common queries     │ │ Exporting          │
+> │▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄│ │▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄─┐│
+> │▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│ │▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀─┘│
+> │               100% │ │                90% │
+> ╰────────────────────╯ ╰────────────────────╯
+> ╭────────────────────╮ ╭────────────────────╮
+> │ Complex queries    │ │ Shitty ASCII-art   │
+> │▄▄▄▄▄▄▄▄▄▄▄▄───────┐│ │▄▄▄▄▄▄▄▄▄▄▄▄▄▄─────┐│
+> │▀▀▀▀▀▀▀▀▀▀▀▀───────┘│ │▀▀▀▀▀▀▀▀▀▀▀▀▀▀─────┘│
+> │                60% │ │                70% │
+> ╰────────────────────╯ ╰────────────────────╯
 
 When the feature status is 100% a 1.0 release will be created with a stable API.
 After that semantic versioning will be used.
@@ -100,7 +113,8 @@ textImportDocument docName keywords orgContent =
 -- * Plain text export
 
 {-|
-Exports all data from the database to a plain text org-mode document
+Exports all data from the database to a plain text org-mode document as a strict
+'Text'.
 -}
 textExportDocument :: (MonadIO m)
                    => Key Db.Document
@@ -286,7 +300,7 @@ exportHeading (Entity hedId heading) = do
                    }
 
 {-|
-Exports plannings from database
+Exports plannings from database for the given heading.
 -}
 exportPlannings :: (MonadIO m)
                 => Key Db.Heading                 -- ^ ID of heading owner
@@ -302,7 +316,7 @@ exportPlannings hedId = do
           in (Db.planningKeyword p, tstamp)
 
 {-|
-Exports clocks from the database
+Exports clocks from the database for the given heading.
 -}
 exportClocks :: (MonadIO m)
              => Key Db.Heading
@@ -317,7 +331,7 @@ exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
           in (Just tstamp, Just hourMin)
 
 {-|
-Exports properties from the database
+Exports properties from the database for the given heading.
 -}
 exportProperties :: (MonadIO m)
                  => Key Db.Heading
@@ -328,7 +342,7 @@ exportProperties hedId =   DbProperty.getByHeading hedId
     fromDb (Entity _ p) = (Db.propertyKey p, Db.propertyValue p)
 
 {-|
-Exports tags from the database
+Exports tags from the database for the given heading.
 -}
 exportTags :: (MonadIO m)
            => Key Db.Heading
@@ -361,6 +375,9 @@ utcToDateTime UTCTime{..}
 
 {-|
 Helper to convert seconds into a clock (hour and minute).
+
+>>> secsToClock (120 :: Int)
+(0, 2)
 -}
 secsToClock :: (Integral a) => a -> (a, a)
 secsToClock seconds
@@ -369,7 +386,10 @@ secsToClock seconds
       in  (hours, restMinutes)
 
 {-|
-Helper to convert a week day number into a literal representation
+Helper to convert a week day number into a literal representation.
+
+>>> weekDayToLit 1
+"Mon"
 -}
 weekDayToLit :: Int -> Text
 weekDayToLit 1 = "Mon"
@@ -397,8 +417,20 @@ dateTimeToUTC (DateTime cal _ clock _ _)
 
 {-|
 Helper for calculating the duration between two 'UTCTime'. Since 'Timestamp's can
-can have the end time missing, this function accepts 'Maybe' 'DateTime'. When the
+can have the end time missing, this function accepts 'Maybe UTCTime'. When the
 end time is missing a duration of 0 is returned.
+
+NB: duration is returned as seconds.
+
+20 seconds between start and end:
+
+>>> utcToDur start (Just end)
+20
+
+No end time given:
+
+>>> utcToDur start Nothing
+0
 -}
 utcToDur :: UTCTime -> Maybe UTCTime -> Int
 utcToDur start endM = case endM of

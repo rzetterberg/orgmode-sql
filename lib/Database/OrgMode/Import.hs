@@ -1,6 +1,8 @@
 {-|
 Commonly used imports used in the project to minimize import definitions in
 modules that uses the same libraries.
+
+Is only used internally in the library.
 -}
 module Database.OrgMode.Import
     ( module Import
