@@ -29,7 +29,7 @@ add owner active start endM dur = P.insert $ Clock owner active start endM dur
 -- * Retrieval
 
 {-|
-Retrieves all 'Document's in the database.
+Retrieves all 'Clock's in the database.
 
 ASC sorted by clock start.
 -}
@@ -38,7 +38,7 @@ getAll :: (MonadIO m)
 getAll = P.selectList [] []
 
 {-|
-Retrieves all clocks in the database and sums up all durations to produce the
+Retrieves all 'Clock's in the database and sums up all durations to produce the
 total amount in seconds.
 
 Input query determines the sorting.
@@ -83,3 +83,13 @@ getByTag tagName =
             where_ (clock   ^. ClockHeading ==. heading ^. HeadingId)
 
             return clock
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes all 'Clock's in the database.
+-}
+deleteAll :: (MonadIO m)
+          => ReaderT SqlBackend m ()
+deleteAll = P.deleteWhere ([] :: [P.Filter Clock])
