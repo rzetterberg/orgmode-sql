@@ -7,40 +7,20 @@ A library that parses org-mode documents, imports the data into an SQL database,
 provides the user with common queries on the data and functionality to export
 the data to different data formats.
 
-The current status of the first 1.0 release of this library is:
-
-> ╭──────────────────────╮ ╭──────────────────────╮
-> │ Parsing              │ │ Database creation    │
-> │┌────────────────────┐│ │┌────────────────────┐│
-> ││████████████████████││ ││████████████████████││
-> │└────────────────────┘│ │└────────────────────┘│
-> │                 100% │ │                 100% │
-> ╰──────────────────────╯ ╰──────────────────────╯
-> ╭──────────────────────╮ ╭──────────────────────╮
-> │ Common queries       │ │ Exporting            │
-> │┌────────────────────┐│ │┌────────────────────┐│
-> ││████████████████████││ ││██████████████████  ││
-> │└────────────────────┘│ │└────────────────────┘│
-> │                 100% │ │                  90% │
-> ╰──────────────────────╯ ╰──────────────────────╯
-> ╭──────────────────────╮ ╭──────────────────────╮
-> │ Complex queries      │ │ Shitty ASCII-art     │
-> │┌────────────────────┐│ │┌────────────────────┐│
-> ││████████████        ││ ││██████████████      ││
-> │└────────────────────┘│ │└────────────────────┘│
-> │                  60% │ │                70%   │
-> ╰──────────────────────╯ ╰──────────────────────╯
-
-When the feature status is 100% a 1.0 release will be created with a stable API.
-After that semantic versioning will be used.
-
 = Goals
 
 Provide a solid foundation to build interesting applications/services that
 revolves around using org-mode data.
 
-This library should to be usable with MySQL, PostgreSQL and SQLite.
-However, currently testing is only performed on SQLite.
+This library should be usable with MySQL, PostgreSQL and SQLite.
+However, currently testing is only performed using SQLite (in memory) as backend.
+
+The priorities of this library are:
+
+1. Stability
+2. User friendly / Well documented
+3. Features
+4. Performance
 
 = Under the hood
 
@@ -56,41 +36,30 @@ that is structured similarly but adapted for storage in SQL-databases. This
 library aims to not expose the user to the internal data types and instead the
 user should use the data types in orgmode-parse.
 
-In other words, you put in orgmode-parse data types and get out orgmode-parse
-data types.
+In other words, you put in orgmode-parse data types and get orgmode-parse
+data types back.
 
 = How to use the library
 
-This section is going to be created when 1.0 is released. Right now this library
-should not be used!
 -}
 
 module Database.OrgMode where
 
 import           Data.Attoparsec.Text (parseOnly)
-import           Data.OrgMode.Parse.Types
-import           Data.Text (strip, append)
-import           Data.Time.Clock (UTCTime(..))
-import           Database.Persist (Entity(..))
-import qualified Data.HashMap.Strict as HM
+import           Data.Text (append)
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
-import qualified Data.Time.Calendar as T
-import qualified Data.Time.Calendar.WeekDate as T
-import qualified Data.Time.Clock as T
 
-import           Database.OrgMode.Import
-import qualified Database.OrgMode.Model as Db
-import qualified Database.OrgMode.Query.Document as DbDocument
-import qualified Database.OrgMode.Query.Heading as DbHeading
-import qualified Database.OrgMode.Query.Tag as DbTag
-import qualified Database.OrgMode.Query.TagRel as DbTagRel
-import qualified Database.OrgMode.Query.Clock as DbClock
-import qualified Database.OrgMode.Query.Planning as DbPlanning
-import qualified Database.OrgMode.Query.Property as DbProperty
-import qualified Data.OrgMode.Export.Text as TextExport
+import           Database.OrgMode.Internal.Import
+import qualified Database.OrgMode.Export as Export
+import qualified Database.OrgMode.Compose.Text as TextC
+import qualified Database.OrgMode.Import as Import
+import qualified Database.OrgMode.Types as Db
 
 -------------------------------------------------------------------------------
--- * Plain text import
+-- * Public API
+
+-------------------------------------------------------------------------------
+-- ** Import of plain text
 
 {-|
 Takes a strict 'Text' and tries to parse the document and import it to the
@@ -107,13 +76,13 @@ textImportDocument :: (MonadIO m)
 textImportDocument docName keywords orgContent =
     case result of
         Left  err -> return (Left err)
-        Right doc -> Right `liftM` importDocument docName doc
+        Right doc -> Right `liftM` Import.importDocument docName doc
   where
     result = parseOnly (OrgParse.parseDocument keywords)
                        (append orgContent "\n")
 
 -------------------------------------------------------------------------------
--- * Plain text export
+-- ** Export to plain text
 
 {-|
 Exports all data from the database to a plain text org-mode document as a strict
@@ -122,320 +91,5 @@ Exports all data from the database to a plain text org-mode document as a strict
 textExportDocument :: (MonadIO m)
                    => Key Db.Document
                    -> ReaderT SqlBackend m (Maybe Text)
-textExportDocument docId = (fmap TextExport.export) `liftM` exportDocument docId
-
--------------------------------------------------------------------------------
--- * Orgmode-parse data import
-
-{-|
-Takes a parsed document and it's name and inserts it into the database. The name
-could be anything, usually the name of the orgmode file is used.
-
-Takes care of importing the whole chain of data (headings, clocks, tags, etc).
-Think of this as an all inclusive holiday into database land.
-
-The ID of the document in the database is returned.
--}
-importDocument :: (MonadIO m)
-               => Text                                   -- ^ Document name
-               -> Document                               -- ^ Parsed document
-               -> ReaderT SqlBackend m (Key Db.Document) -- ^ ID of created doc
-importDocument docName Document{..} = do
-    docId <- DbDocument.add docName (strip documentText)
-
-    mapM_ (importHeading docId Nothing) documentHeadings
-
-    return docId
-
-{-|
-Takes a parsed heading and inserts it into the database. Since headings in
-org-mode have a tree structure each 'Heading' can contain an ID to it's parent.
-
-Headings belong to a specific document that's why the ID is needed when
-inserting a 'Heading' into the database.
-
-NB: this function recurses on each 'subHeadings' found.
--}
-importHeading :: (MonadIO m)
-              => Key Db.Document                       -- ^ ID of document owner
-              -> Maybe (Key Db.Heading)                -- ^ ID of parent heading
-              -> Heading                               -- ^ Parsed heading
-              -> ReaderT SqlBackend m (Key Db.Heading) -- ^ ID of the heading
-importHeading docId parentM Heading{..} = do
-    headingId <- DbHeading.add dbHeading
-
-    mapM_ (importTag headingId) tags
-    mapM_ (importClock headingId) sectionClocks
-    mapM_ (importPlanning headingId) (HM.toList pmap)
-    mapM_ (importProperty headingId) (HM.toList sectionProperties)
-    mapM_ (importHeading docId (Just headingId)) subHeadings
-
-    return headingId
-  where
-    Section{..} = section
-    (Plns pmap) = sectionPlannings
-    (Level lvl) = level
-    kwordM      = fmap unStateKeyword keyword
-    dbHeading   = Db.Heading { headingDocument  = docId
-                             , headingParent    = parentM
-                             , headingLevel     = lvl
-                             , headingKeyword   = kwordM
-                             , headingPriority  = priority
-                             , headingTitle     = title
-                             , headingParagraph = strip sectionParagraph
-                             }
-
-{-|
-Imports the given tag into the database and returns the ID it was given.
-
-NB: This function also sets up the relation between the heading it belongs to.
--}
-importTag :: (MonadIO m)
-          => Key Db.Heading                    -- ^ ID of owner
-          -> Tag                               -- ^ Parsed tag name
-          -> ReaderT SqlBackend m (Key Db.Tag) -- ^ Given ID
-importTag headingId tagName = do
-    tagId <- DbTag.add tagName
-
-    void $ DbTagRel.add headingId tagId
-
-    return tagId
-
-{-|
-Imports the given clock into the database and returns the ID it was given.
-
-NB: This function also handles the relationship between a heading and the
-given clock.
-
-Also, a tuple is used since orgmode-parse does not expose the Clock type.
--}
-importClock :: (MonadIO m)
-            => Key Db.Heading                              -- ^ ID of owner
-            -> (Maybe Timestamp, Maybe Duration)           -- ^ Clock to insert
-            -> ReaderT SqlBackend m (Maybe (Key Db.Clock)) -- ^ Given ID
-importClock _         (Nothing, _)     = return Nothing
-importClock headingId (Just tstamp, _)
-    = DbClock.add headingId tsActive start endM dur >>= return . Just
-  where
-    Timestamp{..} = tstamp
-    start = dateTimeToUTC tsTime
-    endM  = dateTimeToUTC <$> tsEndTime
-    dur   = utcToDur start endM
-
-{-|
-Imports given planning into the database and returns the ID it was given.
-
-NB: A tuple is used since 'Plannings' is a 'HashMap' with 'PlanningKeyword'
-as key and 'Timestamp' as value. There is not a type alias for a single Planning
-in orgmode-parse.
--}
-importPlanning :: (MonadIO m)
-               => Key Db.Heading                         -- ^ ID of owner
-               -> (PlanningKeyword, Timestamp)           -- ^ Planning to insert
-               -> ReaderT SqlBackend m (Key Db.Planning) -- ^ Given ID
-importPlanning hedId (kword, tstamp)
-    = DbPlanning.add hedId kword start
-  where
-    Timestamp{..} = tstamp
-    start = dateTimeToUTC tsTime
-
-{-|
-Imports given property into the database and returns the ID it was given.
-
-NB: A tuple is used since 'Properties' is a 'HashMap' with 'Text'
-as key and 'Text' as value. There is not a type alias for a single Property
-in orgmode-parse.
--}
-importProperty :: (MonadIO m)
-               => Key Db.Heading                         -- ^ ID of owner
-               -> (Text, Text)                           -- ^ Property to insert
-               -> ReaderT SqlBackend m (Key Db.Property) -- ^ Given ID
-importProperty headingId (key, val) = DbProperty.add headingId key val
-
--------------------------------------------------------------------------------
--- * Orgmode-parse data export
-
-{-|
-Exports a complete document along with it's headings from the database.
--}
-exportDocument :: (MonadIO m)
-               => Key Db.Document                       -- ^ ID of document
-               -> ReaderT SqlBackend m (Maybe Document) -- ^ Complete document
-exportDocument docId = DbDocument.get docId >>= go
-  where
-    go Nothing    = return Nothing
-    go (Just doc) = do
-        dbHeadings <- DbHeading.getRootsByDocument docId
-        headings   <- mapM exportHeading dbHeadings
-
-        let res = Document (Db.documentText doc) headings
-
-        return (Just res)
-
-{-|
-Exports a complete heading from the database in a tuple with the database ID
-and the ID of it's parent.
--}
-exportHeading :: (MonadIO m)
-              => Entity Db.Heading
-              -> ReaderT SqlBackend m Heading
-exportHeading (Entity hedId heading) = do
-    plannings  <- exportPlannings hedId
-    clocks     <- exportClocks hedId
-    properties <- exportProperties hedId
-    tags       <- exportTags hedId
-    subs       <- DbHeading.getChildren hedId >>= mapM exportHeading
-
-    let sec = Section { sectionPlannings  = plannings
-                      , sectionClocks     = clocks
-                      , sectionProperties = properties
-                      , sectionParagraph  = Db.headingParagraph heading
-                      }
-
-    return Heading { level       = Level (Db.headingLevel heading)
-                   , keyword     = StateKeyword <$> Db.headingKeyword heading
-                   , priority    = Db.headingPriority heading
-                   , title       = Db.headingTitle heading
-                   , stats       = Nothing
-                   , tags        = tags
-                   , section     = sec
-                   , subHeadings = subs
-                   }
-
-{-|
-Exports plannings from database for the given heading.
--}
-exportPlannings :: (MonadIO m)
-                => Key Db.Heading                 -- ^ ID of heading owner
-                -> ReaderT SqlBackend m Plannings -- ^ Complete plannings
-exportPlannings hedId = do
-    dbPlannings <- (map fromDb) `liftM` DbPlanning.getByHeading hedId
-
-    return $ Plns (HM.fromList dbPlannings)
-  where
-    fromDb (Entity _ p)
-        = let tstamp = Timestamp start{ hourMinute = Nothing } True Nothing
-              start  = utcToDateTime (Db.planningTime p)
-          in (Db.planningKeyword p, tstamp)
-
-{-|
-Exports clocks from the database for the given heading.
--}
-exportClocks :: (MonadIO m)
-             => Key Db.Heading
-             -> ReaderT SqlBackend m [(Maybe Timestamp, Maybe Duration)]
-exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
-  where
-    fromDb (Entity _ clock)
-        = let tstamp  = Timestamp start (Db.clockActive clock) endM
-              start   = utcToDateTime (Db.clockStart clock)
-              endM    = utcToDateTime <$> Db.clockEnd clock
-              hourMin = secsToClock (Db.clockDuration clock)
-          in (Just tstamp, Just hourMin)
-
-{-|
-Exports properties from the database for the given heading.
--}
-exportProperties :: (MonadIO m)
-                 => Key Db.Heading
-                 -> ReaderT SqlBackend m Properties
-exportProperties hedId =   DbProperty.getByHeading hedId
-                       >>= return . HM.fromList . map fromDb
-  where
-    fromDb (Entity _ p) = (Db.propertyKey p, Db.propertyValue p)
-
-{-|
-Exports tags from the database for the given heading.
--}
-exportTags :: (MonadIO m)
-           => Key Db.Heading
-           -> ReaderT SqlBackend m [Tag]
-exportTags hedId = (map fromDb) `liftM` DbTag.getByHeading hedId
-  where
-    fromDb (Entity _ t) = Db.tagName t
-
--------------------------------------------------------------------------------
--- * Helpers
-
-{-|
-Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
-used for convenience when calculating the duration of two 'DateTime's.
--}
-utcToDateTime :: UTCTime
-              -> DateTime
-utcToDateTime UTCTime{..}
-    = DateTime { yearMonthDay = ymd
-               , dayName      = Just (weekDayToLit weekDay)
-               , hourMinute   = Just (secsToClock seconds)
-               , repeater     = Nothing
-               , delay        = Nothing
-               }
-  where
-    ymd                = YMD' $ YearMonthDay (fromInteger year) month day
-    (seconds, _)       = properFraction utctDayTime
-    (year, month, day) = T.toGregorian utctDay
-    (_, _, weekDay)    = T.toWeekDate utctDay
-
-{-|
-Helper to convert seconds into a clock (hour and minute).
-
->>> secsToClock (120 :: Int)
-(0, 2)
--}
-secsToClock :: (Integral a) => a -> (a, a)
-secsToClock seconds
-    = let (minutes, _)         = seconds `divMod` 60
-          (hours, restMinutes) = minutes `divMod` 60
-      in  (hours, restMinutes)
-
-{-|
-Helper to convert a week day number into a literal representation.
-
->>> weekDayToLit 1
-"Mon"
--}
-weekDayToLit :: Int -> Text
-weekDayToLit 1 = "Mon"
-weekDayToLit 2 = "Tue"
-weekDayToLit 3 = "Wed"
-weekDayToLit 4 = "Thu"
-weekDayToLit 5 = "Fri"
-weekDayToLit 6 = "Sat"
-weekDayToLit _ = "Sun"
-
-{-|
-Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
-used for convenience when calculating the duration of two 'DateTime's.
--}
-dateTimeToUTC :: DateTime
-              -> UTCTime
-dateTimeToUTC (DateTime cal _ clock _ _)
-    = UTCTime (T.fromGregorian (toInteger year) month day)
-              (T.secondsToDiffTime midSecs)
-  where
-    (YMD' (YearMonthDay year month day)) = cal
-    calcSecs Nothing       = 0
-    calcSecs (Just (h, m)) = ((h * 60) + m) * 60
-    midSecs                = toInteger $ calcSecs clock
-
-{-|
-Helper for calculating the duration between two 'UTCTime'. Since 'Timestamp's can
-can have the end time missing, this function accepts 'Maybe UTCTime'. When the
-end time is missing a duration of 0 is returned.
-
-NB: duration is returned as seconds.
-
-20 seconds between start and end:
-
->>> utcToDur start (Just end)
-20
-
-No end time given:
-
->>> utcToDur start Nothing
-0
--}
-utcToDur :: UTCTime -> Maybe UTCTime -> Int
-utcToDur start endM = case endM of
-    Nothing  -> 0
-    Just end -> round $ T.diffUTCTime end start
+textExportDocument docId
+    = (fmap TextC.export) `liftM` Export.exportDocument docId

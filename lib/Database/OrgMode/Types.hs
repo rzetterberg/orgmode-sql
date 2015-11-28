@@ -65,12 +65,12 @@ a 'Tag' more than once.
 This way we don't have duplicate tag names in the database.
 -}
 
-module Database.OrgMode.Model where
+module Database.OrgMode.Types where
 
 import           Data.OrgMode.Parse.Types (Priority(..), PlanningKeyword(..))
 
-import           Database.OrgMode.Import
-import           Database.OrgMode.Marshall()
+import           Database.OrgMode.Internal.Import
+import           Database.OrgMode.Internal.PersistDerive()
 
 --------------------------------------------------------------------------------
 

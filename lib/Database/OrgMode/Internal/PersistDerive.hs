@@ -7,7 +7,7 @@ representation of time.
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module Database.OrgMode.Marshall where
+module Database.OrgMode.Internal.PersistDerive where
 
 import           Prelude
 import           Data.OrgMode.Parse.Types (Priority(..), PlanningKeyword(..))

@@ -16,7 +16,7 @@ import qualified Data.Text.IO as T
 
 import qualified Database.OrgMode as OrgDb
 import qualified Database.OrgMode.Query.Clock as Clock
-import           Database.OrgMode.Model
+import           Database.OrgMode.Types
 
 -------------------------------------------------------------------------------
 

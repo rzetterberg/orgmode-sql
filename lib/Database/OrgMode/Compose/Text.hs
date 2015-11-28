@@ -20,7 +20,7 @@ All 'export' does is to wrap that with strict conversion:
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Data.OrgMode.Export.Text where
+module Database.OrgMode.Compose.Text where
 
 import           Data.OrgMode.Parse.Types
 import           Data.Text (Text)

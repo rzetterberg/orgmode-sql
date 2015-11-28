@@ -18,8 +18,12 @@ library
   hs-source-dirs: lib
 
   exposed-modules: Database.OrgMode
-                 , Database.OrgMode.Marshall
-                 , Database.OrgMode.Model
+                 , Database.OrgMode.Compose.Text
+                 , Database.OrgMode.Export
+                 , Database.OrgMode.Import
+                 , Database.OrgMode.Internal.Import
+                 , Database.OrgMode.Internal.PersistDerive
+                 , Database.OrgMode.Types
                  , Database.OrgMode.Query.Clock
                  , Database.OrgMode.Query.Document
                  , Database.OrgMode.Query.Heading
@@ -27,8 +31,6 @@ library
                  , Database.OrgMode.Query.Property
                  , Database.OrgMode.Query.Tag
                  , Database.OrgMode.Query.TagRel
-                 , Database.OrgMode.Import
-                 , Data.OrgMode.Export.Text
 
   ghc-options:
         -Wall
@@ -81,7 +83,6 @@ executable orgmode-sql-demo
   default-extensions: FlexibleContexts
                       OverloadedStrings
                       Rank2Types
-                      KindSignatures
 
   build-depends: base                    >= 4.4  && < 5.0
                , attoparsec              >= 0.12

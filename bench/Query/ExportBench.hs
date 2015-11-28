@@ -6,15 +6,16 @@ import           Data.Attoparsec.Text (parseOnly)
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Text as T
 
-import qualified Database.OrgMode as OrgDb
+import qualified Database.OrgMode.Import as OrgDb
+import qualified Database.OrgMode.Export as OrgDb
 
 --------------------------------------------------------------------------------
 
 benches :: Benchmark
 benches = bgroup "Export" [ benchSmallDoc
-                                 , benchMediumDoc
-                                 , benchLargeDoc
-                                 ]
+                          , benchMediumDoc
+                          , benchLargeDoc
+                          ]
 
 benchSmallDoc :: Benchmark
 benchSmallDoc = bench "small doc" $ whnfIO $ do

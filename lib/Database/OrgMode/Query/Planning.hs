@@ -7,8 +7,8 @@ import           Data.OrgMode.Parse.Types (PlanningKeyword(..))
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
-import           Database.OrgMode.Import
-import           Database.OrgMode.Model
+import           Database.OrgMode.Internal.Import
+import           Database.OrgMode.Types
 
 -------------------------------------------------------------------------------
 -- * Creation

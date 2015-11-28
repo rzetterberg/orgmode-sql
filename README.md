@@ -16,6 +16,35 @@ languages and tools.
 Initially only `SQLite` will be tested and supported, but the plan is to be able
 to also use `PostgreSQL` and `MySQL`.
 
+The current status of the first 1.0 release of this library is:
+
+```
+╭──────────────────────╮ ╭──────────────────────╮
+│ Parsing              │ │ Database creation    │
+│┌────────────────────┐│ │┌────────────────────┐│
+││████████████████████││ ││████████████████████││
+│└────────────────────┘│ │└────────────────────┘│
+│                 100% │ │                 100% │
+╰──────────────────────╯ ╰──────────────────────╯
+╭──────────────────────╮ ╭──────────────────────╮
+│ Common queries       │ │ Exporting            │
+│┌────────────────────┐│ │┌────────────────────┐│
+││████████████████████││ ││██████████████████  ││
+│└────────────────────┘│ │└────────────────────┘│
+│                 100% │ │                  90% │
+╰──────────────────────╯ ╰──────────────────────╯
+╭──────────────────────╮ ╭──────────────────────╮
+│ Complex queries      │ │ Shitty ASCII-art     │
+│┌────────────────────┐│ │┌────────────────────┐│
+││████████████        ││ ││██████████████      ││
+│└────────────────────┘│ │└────────────────────┘│
+│                  60% │ │                70%   │
+╰──────────────────────╯ ╰──────────────────────╯
+```
+
+When the feature status is 100% a 1.0 release will be created with a stable API.
+After that semantic versioning will be used.
+
 ## Specification
 
 Uses the [Stackage LTS 3.7 package set](https://www.stackage.org/lts-3.7) to
