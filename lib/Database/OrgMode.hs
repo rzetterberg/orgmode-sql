@@ -51,7 +51,7 @@ import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 
 import           Database.OrgMode.Internal.Import
 import qualified Database.OrgMode.Export as Export
-import qualified Database.OrgMode.Compose.Text as TextC
+import qualified Database.OrgMode.Render.OrgModeText as OrgRender
 import qualified Database.OrgMode.Import as Import
 import qualified Database.OrgMode.Types as Db
 
@@ -92,4 +92,4 @@ textExportDocument :: (MonadIO m)
                    => Key Db.Document
                    -> ReaderT SqlBackend m (Maybe Text)
 textExportDocument docId
-    = (fmap TextC.export) `liftM` Export.exportDocument docId
+    = (fmap OrgRender.render) `liftM` Export.exportDocument docId
