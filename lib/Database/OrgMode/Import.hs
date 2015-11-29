@@ -3,8 +3,10 @@
 
 module Database.OrgMode.Import where
 
+import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
+import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
-import           Data.Text (strip)
+import           Data.Text (strip, append)
 import           Data.Time.Clock (UTCTime(..))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Time.Calendar as T
@@ -19,6 +21,32 @@ import qualified Database.OrgMode.Query.Property as DbProperty
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Query.TagRel as DbTagRel
 import qualified Database.OrgMode.Types as Db
+
+-------------------------------------------------------------------------------
+-- * Plain text
+
+{-|
+Takes a strict 'Text' and tries to parse the document and import it to the
+database.
+
+Returns the document ID of the created document or the error message from
+the parser.
+-}
+textImportDocument :: (MonadIO m)
+                   => Text                    -- ^ Name of the document
+                   -> [Text]                  -- ^ Keywords to allow
+                   -> Text                    -- ^ org-mode document contents
+                   -> ReaderT SqlBackend m (Either String (Key Db.Document))
+textImportDocument docName keywords orgContent =
+    case result of
+        Left  err -> return (Left err)
+        Right doc -> Right `liftM` importDocument docName doc
+  where
+    result = parseOnly (OrgParse.parseDocument keywords)
+                       (append orgContent "\n")
+
+-------------------------------------------------------------------------------
+-- * Orgmode-parse types
 
 {-|
 Takes a parsed document and it's name and inserts it into the database. The name

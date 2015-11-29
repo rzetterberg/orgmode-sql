@@ -11,6 +11,7 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Calendar.WeekDate as T
 
 import           Database.OrgMode.Internal.Import
+import qualified Database.OrgMode.Render.OrgModeText as OrgRender
 import qualified Database.OrgMode.Query.Clock as DbClock
 import qualified Database.OrgMode.Query.Document as DbDocument
 import qualified Database.OrgMode.Query.Heading as DbHeading
@@ -18,6 +19,22 @@ import qualified Database.OrgMode.Query.Planning as DbPlanning
 import qualified Database.OrgMode.Query.Property as DbProperty
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Types as Db
+
+-------------------------------------------------------------------------------
+-- * Plain text
+
+{-|
+Exports all data from the database to a plain text org-mode document as a strict
+'Text'.
+-}
+textExportDocument :: (MonadIO m)
+                   => Key Db.Document
+                   -> ReaderT SqlBackend m (Maybe Text)
+textExportDocument docId
+    = (fmap OrgRender.render) `liftM` exportDocument docId
+
+-------------------------------------------------------------------------------
+-- * Orgmode-parse types
 
 {-|
 Exports a complete document along with it's headings from the database.

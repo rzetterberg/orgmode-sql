@@ -9,7 +9,6 @@ import           TestImport
 import qualified Data.Text as T
 
 import qualified Database.OrgMode as OrgDb
-import qualified Database.OrgMode.Export as OrgDb
 import qualified Database.OrgMode.Query.Clock as Clock
 import qualified Database.OrgMode.Query.Heading as Heading
 import qualified Database.OrgMode.Query.Tag as Tag

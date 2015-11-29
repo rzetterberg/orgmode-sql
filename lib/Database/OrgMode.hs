@@ -43,53 +43,12 @@ data types back.
 
 -}
 
-module Database.OrgMode where
+module Database.OrgMode
+       ( importDocument
+       , textImportDocument
+       , exportDocument
+       , textExportDocument
+       ) where
 
-import           Data.Attoparsec.Text (parseOnly)
-import           Data.Text (append)
-import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
-
-import           Database.OrgMode.Internal.Import
-import qualified Database.OrgMode.Export as Export
-import qualified Database.OrgMode.Render.OrgModeText as OrgRender
-import qualified Database.OrgMode.Import as Import
-import qualified Database.OrgMode.Types as Db
-
--------------------------------------------------------------------------------
--- * Public API
-
--------------------------------------------------------------------------------
--- ** Import of plain text
-
-{-|
-Takes a strict 'Text' and tries to parse the document and import it to the
-database.
-
-Returns the document ID of the created document or the error message from
-the parser.
--}
-textImportDocument :: (MonadIO m)
-                   => Text                    -- ^ Name of the document
-                   -> [Text]                  -- ^ Keywords to allow
-                   -> Text                    -- ^ org-mode document contents
-                   -> ReaderT SqlBackend m (Either String (Key Db.Document))
-textImportDocument docName keywords orgContent =
-    case result of
-        Left  err -> return (Left err)
-        Right doc -> Right `liftM` Import.importDocument docName doc
-  where
-    result = parseOnly (OrgParse.parseDocument keywords)
-                       (append orgContent "\n")
-
--------------------------------------------------------------------------------
--- ** Export to plain text
-
-{-|
-Exports all data from the database to a plain text org-mode document as a strict
-'Text'.
--}
-textExportDocument :: (MonadIO m)
-                   => Key Db.Document
-                   -> ReaderT SqlBackend m (Maybe Text)
-textExportDocument docId
-    = (fmap OrgRender.render) `liftM` Export.exportDocument docId
+import           Database.OrgMode.Import (importDocument, textImportDocument)
+import           Database.OrgMode.Export (exportDocument, textExportDocument)
