@@ -16,7 +16,7 @@ spec = do
   describe "getByTag" $ do
       it "example 4_sections_3_tags_2_clocks" $ do
           headings <- runDb $ do
-              importExample "4_sections_3_tags_2_clocks.org"
+              void $ importExample "4_sections_3_tags_2_clocks.org"
 
               Heading.getByTag "support"
 

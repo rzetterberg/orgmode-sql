@@ -3,6 +3,7 @@
 
 module Database.OrgMode.Export where
 
+import           Data.Maybe (isNothing)
 import           Data.OrgMode.Parse.Types
 import           Data.Time.Clock (UTCTime(..))
 import           Database.Persist (Entity(..))
@@ -19,6 +20,11 @@ import qualified Database.OrgMode.Query.Planning as DbPlanning
 import qualified Database.OrgMode.Query.Property as DbProperty
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Types as Db
+
+-------------------------------------------------------------------------------
+-- * Types
+
+type HeadingRel = (Heading, Key Db.Heading, Maybe (Key Db.Heading))
 
 -------------------------------------------------------------------------------
 -- * Plain text
@@ -46,42 +52,61 @@ exportDocument docId = DbDocument.get docId >>= go
   where
     go Nothing    = return Nothing
     go (Just doc) = do
-        dbHeadings <- DbHeading.getRootsByDocument docId
-        headings   <- mapM exportHeading dbHeadings
+        dbHeadings <- DbHeading.getByDocument docId
+        rels       <- mapM exportHeadingRel dbHeadings
 
-        let res = Document (Db.documentText doc) headings
+        let res = Document (Db.documentText doc) (headingsFromRels rels)
 
         return (Just res)
 
 {-|
+Takes a flat list of 'HeadingRel's and creates a 'Heading' hierarchy.
+
+NB: This function is really naive and inefficient.
+-}
+headingsFromRels :: [HeadingRel] -> [Heading]
+headingsFromRels rels = map findChildren $
+    filter (\(_, _, parentM) -> isNothing parentM) rels
+  where
+    isChild currId (_, _, (Just parId)) = currId == parId
+    isChild _ (_, _, Nothing)           = False
+    findChildren (hed, currId, _)
+        = let subs = map findChildren $ filter (isChild currId) rels
+          in  hed{ subHeadings = subs }
+
+{-|
 Exports a complete heading from the database in a tuple with the database ID
 and the ID of it's parent.
+
+NB: Does not retrieve the subheadings of the given heading. All headings should
+be retrieved form the database and then the hierarchy should be built using
+'headingsFromRels'.
 -}
-exportHeading :: (MonadIO m)
-              => Entity Db.Heading
-              -> ReaderT SqlBackend m Heading
-exportHeading (Entity hedId heading) = do
+exportHeadingRel :: (MonadIO m)
+                 => Entity Db.Heading
+                 -> ReaderT SqlBackend m HeadingRel
+exportHeadingRel (Entity hedId heading) = do
     plannings  <- exportPlannings hedId
     clocks     <- exportClocks hedId
     properties <- exportProperties hedId
     tags       <- exportTags hedId
-    subs       <- DbHeading.getChildren hedId >>= mapM exportHeading
 
     let sec = Section { sectionPlannings  = plannings
                       , sectionClocks     = clocks
                       , sectionProperties = properties
                       , sectionParagraph  = Db.headingParagraph heading
                       }
+        hed = Heading { level       = Level (Db.headingLevel heading)
+                      , keyword     = StateKeyword <$> Db.headingKeyword heading
+                      , priority    = Db.headingPriority heading
+                      , title       = Db.headingTitle heading
+                      , stats       = Nothing
+                      , tags        = tags
+                      , section     = sec
+                      , subHeadings = []
+                      }
 
-    return Heading { level       = Level (Db.headingLevel heading)
-                   , keyword     = StateKeyword <$> Db.headingKeyword heading
-                   , priority    = Db.headingPriority heading
-                   , title       = Db.headingTitle heading
-                   , stats       = Nothing
-                   , tags        = tags
-                   , section     = sec
-                   , subHeadings = subs
-                   }
+    return (hed, hedId, (Db.headingParent heading))
 
 {-|
 Exports plannings from database for the given heading.

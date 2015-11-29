@@ -17,7 +17,7 @@ spec = do
   describe "getByHeading" $ do
       it "example 1_clock_2_hours" $ do
           clocks <- runDb $ do
-              importExample "1_clock_2_hours.org"
+              void $ importExample "1_clock_2_hours.org"
 
               headings <- Heading.getAll
 
@@ -28,7 +28,7 @@ spec = do
           (length clocks) `shouldBe` 1
       it "example 2_clocks_45_minutes" $ do
           clocks <- runDb $ do
-              importExample "2_clocks_45_minutes.org"
+              void $ importExample "2_clocks_45_minutes.org"
 
               headings <- Heading.getAll
 
@@ -40,7 +40,7 @@ spec = do
   describe "getByTag" $ do
       it "example 4_sections_3_tags_2_clocks" $ do
           clocks <- runDb $ do
-              importExample "4_sections_3_tags_2_clocks.org"
+              void $ importExample "4_sections_3_tags_2_clocks.org"
 
               Clock.getByTag "support"
 

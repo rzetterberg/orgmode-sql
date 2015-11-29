@@ -50,27 +50,3 @@ ASC sorted by heading level for easier tree construction.
 -}
 getByDocument :: (MonadIO m) => Key Document -> ReaderT SqlBackend m [Entity Heading]
 getByDocument docId = P.selectList [HeadingDocument P.==. docId] [P.Asc HeadingLevel]
-
-{-|
-Retrives all root 'Heading's by 'Document' ID
--}
-getRootsByDocument :: (MonadIO m) => Key Document -> ReaderT SqlBackend m [Entity Heading]
-getRootsByDocument docId =
-    select $
-        from $ \(doc, heading) -> do
-            where_ (doc ^. DocumentId ==. val docId)
-            where_ (heading ^. HeadingDocument ==. doc ^. DocumentId)
-            where_ $ isNothing (heading ^. HeadingParent)
-
-            return heading
-
-{-|
-Retrives all children of a 'Heading's by ID
--}
-getChildren :: (MonadIO m) => Key Heading -> ReaderT SqlBackend m [Entity Heading]
-getChildren hedId =
-    select $
-        from $ \(heading) -> do
-            where_ (heading ^. HeadingParent ==. just (val hedId))
-
-            return heading

@@ -7,7 +7,7 @@ import           Test.Hspec              as X
 import           Data.Text               as X (Text)
 import           Database.Persist.Sqlite as X
 import           Control.Monad.IO.Class  as X (liftIO, MonadIO)
-import           Control.Monad           as X (void)
+import           Control.Monad           as X (void, liftM)
 import           Control.Monad.Reader    as X (ReaderT)
 
 import           Control.Monad.Logger
@@ -15,13 +15,13 @@ import           Control.Monad.Trans.Resource (ResourceT, MonadBaseControl, runR
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-import qualified Database.OrgMode as OrgDb
-import           Database.OrgMode.Types (migrateAll)
+import qualified Database.OrgMode as Db
+import qualified Database.OrgMode.Types as Db
 
 -------------------------------------------------------------------------------
 
 setupDb :: (MonadBaseControl IO m, MonadIO m) => ReaderT SqlBackend m ()
-setupDb = void $ runMigrationSilent migrateAll
+setupDb = void $ runMigrationSilent Db.migrateAll
 
 runDb :: forall a. SqlPersistT (NoLoggingT (ResourceT IO)) a -> IO a
 runDb a = liftIO $ runSqlite ":memory:" $ setupDb >> a
@@ -30,8 +30,10 @@ runDb' :: forall a. SqlPersistT (LoggingT (ResourceT IO)) a -> IO a
 runDb' a = liftIO $ runSqlite' ":memory:" $ setupDb >> a
 
 runSqlite' :: forall (m :: * -> *) a.
-              (MonadIO m, MonadBaseControl IO m) =>
-              Text -> SqlPersistT (LoggingT (ResourceT m)) a -> m a
+              (MonadIO m, MonadBaseControl IO m)
+           => Text
+           -> SqlPersistT (LoggingT (ResourceT m)) a
+           -> m a
 runSqlite' connstr = runResourceT
                    . runStderrLoggingT
                    . withSqliteConn connstr
@@ -40,7 +42,9 @@ runSqlite' connstr = runResourceT
 {-|
 Imports the given example file to the database
 -}
-importExample :: (MonadIO m) => FilePath -> ReaderT SqlBackend m ()
+importExample :: (MonadIO m)
+              => FilePath
+              -> ReaderT SqlBackend m (Key Db.Document)
 importExample fname = do
     contents <- liftIO (getExample fname)
     parseImport (T.pack fname) allowedTags contents
@@ -64,5 +68,9 @@ parseImport :: (MonadIO m)
             => Text                    -- ^ Name of the document
             -> [Text]                  -- ^ Keywords to allow
             -> Text                    -- ^ org-mode document contents
-            -> ReaderT SqlBackend m ()
-parseImport docName keywords = void . OrgDb.textImportDocument docName keywords
+            -> ReaderT SqlBackend m (Key Db.Document)
+parseImport docName keywords contents
+    = getId `liftM` Db.textImportDocument docName keywords contents
+  where
+    getId (Right docId) = docId
+    getId (Left err)    = error err
