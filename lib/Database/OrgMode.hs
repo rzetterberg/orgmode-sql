@@ -1,54 +1,122 @@
-{-|
-= Introduction
-
-<<https://api.travis-ci.org/rzetterberg/orgmode-sql.svg Travis CI status>>
-
-A library that parses org-mode documents, imports the data into an SQL database,
-provides the user with common queries on the data and functionality to export
-the data to different data formats.
-
-= Goals
-
-Provide a solid foundation to build interesting applications/services that
-revolves around using org-mode data.
-
-This library should be usable with MySQL, PostgreSQL and SQLite.
-However, currently testing is only performed using SQLite (in memory) as backend.
-
-The priorities of this library are:
-
-1. Stability
-2. User friendly / Well documented
-3. Features
-4. Performance
-
-= Under the hood
-
-The foundation of this library revolves around using
-<https://hackage.haskell.org/package/orgmode-parse orgmode-parse> and
-<https://hackage.haskell.org/package/persistent persistent>. Those two libraries
-takes care of the heavy lifting and solves the real problems. This library is
-just the glue between them!
-
-If you are familiar with orgmode-parse you know that it has data types for all
-the different data in an org-mode document. This library has it's own data types
-that is structured similarly but adapted for storage in SQL-databases. This
-library aims to not expose the user to the internal data types and instead the
-user should use the data types in orgmode-parse.
-
-In other words, you put in orgmode-parse data types and get orgmode-parse
-data types back.
-
-= How to use the library
-
--}
+-- | = Introduction
+--
+-- <<https://api.travis-ci.org/rzetterberg/orgmode-sql.svg Travis CI status>>
+--
+-- A library that parses org-mode documents, imports the data into an SQL database,
+-- provides the user with common queries on the data and functionality to export
+-- the data to different data formats.
+--
+-- = Goals
+--
+-- Provide a solid foundation to build interesting applications/services that
+-- revolves around using org-mode data.
+--
+-- This library should be usable with MySQL, PostgreSQL and SQLite.
+-- However, currently testing is only performed using SQLite (in memory) as backend.
+--
+-- The priorities of this library are:
+--
+-- 1. Stability
+-- 2. User friendly / Well documented
+-- 3. Features
+-- 4. Performance
+--
+-- = Under the hood
+--
+-- The foundation of this library revolves around using
+-- <https://hackage.haskell.org/package/orgmode-parse orgmode-parse> and
+-- <https://hackage.haskell.org/package/persistent persistent>. Those two libraries
+-- takes care of the heavy lifting and solves the real problems. This library is
+-- just the glue between them!
+--
+-- If you are familiar with orgmode-parse you know that it has data types for all
+-- the different data in an org-mode document. This library has it's own data types
+-- that is structured similarly but adapted for storage in SQL-databases. This
+-- library aims to not expose the user to the internal data types and instead the
+-- user should use the data types in orgmode-parse.
+--
+-- In other words, you put in orgmode-parse data types and get orgmode-parse
+-- data types back.
+--
+-- = How to use the library
+--
+-- To get you started as fast as possible below is a minimal complete example
+-- you can use.
+--
+-- The example below parses a 'Text' containing a orgmode plain text document.
+-- The parsed document is then inserted into the database and then a query that
+-- deletes all Clocks in the database is run. After that the document is
+-- exported as a orgmode plain text and printed to stdout.
+--
+-- > {-# LANGUAGE FlexibleContexts #-}
+-- > {-# LANGUAGE OverloadedStrings #-}
+-- > {-# LANGUAGE Rank2Types #-}
+-- >
+-- > module Main where
+-- >
+-- > import           Database.Persist.Sqlite
+-- > import           Control.Monad.IO.Class (liftIO)
+-- > import           Control.Monad (void)
+-- >
+-- > import           Data.Text (Text)
+-- > import qualified Data.Text as T
+-- > import qualified Data.Text.IO as T
+-- >
+-- > import qualified Database.OrgMode as OrgDb
+-- > import qualified Database.OrgMode.Query.Clock as Clock
+-- > import           Database.OrgMode.Types (migrateAll)
+-- >
+-- > -------------------------------------------------------------------------------
+-- >
+-- > testDoc :: Text
+-- > testDoc = T.intercalate "\n"
+-- >     [ "* TODO Make more examples :documentation:"
+-- >     , "  CLOCK: [2015-10-08 Thu 16:24]--[2015-10-08 Thu 17:10] =>  0:46"
+-- >     ]
+-- >
+-- > main :: IO ()
+-- > main = liftIO $ runSqlite ":memory:" $ do
+-- >     liftIO $ do
+-- >         T.putStrLn ">> Plain text input:"
+-- >         T.putStrLn "---"
+-- >         T.putStrLn testDoc
+-- >         T.putStrLn "---"
+-- >
+-- >     -- Create the database schema
+-- >     void $ runMigrationSilent migrateAll
+-- >
+-- >     -- Parse and import our test document and name the document "test_doc"
+-- >     docIdE <- OrgDb.textImportDocument "test_doc" ["TODO", "DONE"] testDoc
+-- >
+-- >     -- Check if import was successful,
+-- >     docId <- case docIdE of
+-- >         (Left err)    -> error $ "Parsing failed: " ++ err
+-- >         (Right docId) -> return docId
+-- >
+-- >     -- Remove the all clocks from the database
+-- >     Clock.deleteAll
+-- >
+-- >     -- Export the document as plain text orgmode data
+-- >     outputM <- OrgDb.textExportDocument docId
+-- >
+-- >     -- Check that the imported document was found in the database
+-- >     liftIO $ case outputM of
+-- >         Nothing       -> T.putStrLn ">> Document not found in database"
+-- >         (Just output) -> do
+-- >             T.putStrLn ">> Plain text output after removing clocks:"
+-- >             T.putStrLn "---"
+-- >             T.putStrLn output
+-- >             T.putStrLn "---"
+--
+-- This example also exists as a executable of this project to make sure the
+-- example is fully working.
 
 module Database.OrgMode
-       ( importDocument
-       , textImportDocument
-       , exportDocument
+       ( textImportDocument
+       , importDocument
        , textExportDocument
+       , exportDocument
        ) where
 
-import           Database.OrgMode.Import (importDocument, textImportDocument)
-import           Database.OrgMode.Export (exportDocument, textExportDocument)
+import           Database.OrgMode.Import (textImportDocument, importDocument)
+import           Database.OrgMode.Export (textExportDocument, exportDocument)

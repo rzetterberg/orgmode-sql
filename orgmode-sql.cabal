@@ -80,27 +80,13 @@ executable orgmode-sql-demo
   ghc-options:
         -Wall
 
-  default-extensions: FlexibleContexts
-                      OverloadedStrings
-                      Rank2Types
-
-  build-depends: attoparsec              >= 0.12
-               , base                    >= 4.4  && < 5.0
-               , directory
-               , hspec                   >= 2.1
-               , monad-control           >= 1.0
-               , monad-logger            >= 0.3
-               , mtl                     >= 2.2
-               , orgmode-parse           >= 0.1
+  build-depends: base                    >= 4.4  && < 5.0
                , orgmode-sql
                , persistent              >= 2.2
                , persistent-sqlite       >= 2.2
                , persistent-template     >= 2.1
-               , resourcet               >= 1.1
                , text                    >= 1.2
-               , time
                , transformers
-               , unordered-containers    >= 0.2
 
   default-language:    Haskell2010
 

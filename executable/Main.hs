@@ -1,57 +1,59 @@
-{-|
-Demo executable that parses a orgmode file, inserts the data into the database,
-removes all clocks and exports the document as a new orgmode file.
--}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE Rank2Types #-}
 
 module Main where
 
 import           Database.Persist.Sqlite
-import           Control.Monad.IO.Class (liftIO, MonadIO)
+import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad (void)
-import           Control.Monad.Reader (ReaderT)
 
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Resource (ResourceT, MonadBaseControl)
+import           Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 import qualified Database.OrgMode as OrgDb
 import qualified Database.OrgMode.Query.Clock as Clock
-import           Database.OrgMode.Types
+import           Database.OrgMode.Types (migrateAll)
 
 -------------------------------------------------------------------------------
+
+testDoc :: Text
+testDoc = T.intercalate "\n"
+    [ "* TODO Make more examples :documentation:"
+    , "  CLOCK: [2015-10-08 Thu 16:24]--[2015-10-08 Thu 17:10] =>  0:46"
+    ]
 
 main :: IO ()
-main = do
-    rawInput <- T.readFile "test/examples/all_data.org"
-    exportE  <- runDb $ do
-        docIdE <- OrgDb.textImportDocument "all_data" ["TODO", "DONE"] rawInput
+main = liftIO $ runSqlite ":memory:" $ do
+    liftIO $ do
+        T.putStrLn ">> Plain text input:"
+        T.putStrLn "---"
+        T.putStrLn testDoc
+        T.putStrLn "---"
 
-        case docIdE of
-            (Left err)
-                -> return (Left err)
-            (Right docId)
-                -> go docId
+    -- Create the database schema
+    void $ runMigrationSilent migrateAll
 
-    case exportE of
-        (Left err)
-            -> putStrLn ("Failed with: " ++ err)
-        (Right rawOutput)
-            -> T.putStrLn rawOutput
-  where
-    go docId = do
-        Clock.deleteAll
+    -- Parse and import our test document and name the document "test_doc"
+    docIdE <- OrgDb.textImportDocument "test_doc" ["TODO", "DONE"] testDoc
 
-        rawExportM <- OrgDb.textExportDocument docId
+    -- Check if import was successful,
+    docId <- case docIdE of
+        (Left err)    -> error $ "Parsing failed: " ++ err
+        (Right docId) -> return docId
 
-        return $ case rawExportM of
-            Nothing  -> Left "Document was not found in database"
-            Just raw -> Right raw
+    -- Remove the all clocks from the database
+    Clock.deleteAll
 
--------------------------------------------------------------------------------
--- * Helpers
+    -- Export the document as plain text orgmode data
+    outputM <- OrgDb.textExportDocument docId
 
-setupDb :: (MonadBaseControl IO m, MonadIO m) => ReaderT SqlBackend m ()
-setupDb = void $ runMigrationSilent migrateAll
-
-runDb :: forall a. SqlPersistT (NoLoggingT (ResourceT IO)) a -> IO a
-runDb a = liftIO $ runSqlite ":memory:" $ setupDb >> a
+    -- Check that the imported document was found in the database
+    liftIO $ case outputM of
+        Nothing       -> T.putStrLn ">> Document not found in database"
+        (Just output) -> do
+            T.putStrLn ">> Plain text output after removing clocks:"
+            T.putStrLn "---"
+            T.putStrLn output
+            T.putStrLn "---"
