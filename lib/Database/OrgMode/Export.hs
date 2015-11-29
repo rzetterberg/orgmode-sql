@@ -1,4 +1,6 @@
 {-|
+Functionality to export different parts of the orgmode data structure tree.
+All parts have functions to export them separately.
 -}
 
 module Database.OrgMode.Export where
@@ -24,6 +26,10 @@ import qualified Database.OrgMode.Types as Db
 -------------------------------------------------------------------------------
 -- * Types
 
+{-|
+Represents the hierarchy relationship between 'Heading's for use in a flat
+list. The heading, it's database ID and the optional parent database ID.
+-}
 type HeadingRel = (Heading, Key Db.Heading, Maybe (Key Db.Heading))
 
 -------------------------------------------------------------------------------
@@ -43,7 +49,8 @@ textExportDocument docId
 -- * Orgmode-parse types
 
 {-|
-Exports a complete document along with it's headings from the database.
+Exports a complete document along with it's headings from the database using
+the given 'Db.Document' id.
 -}
 exportDocument :: (MonadIO m)
                => Key Db.Document                       -- ^ ID of document
@@ -60,19 +67,17 @@ exportDocument docId = DbDocument.get docId >>= go
         return (Just res)
 
 {-|
-Takes a flat list of 'HeadingRel's and creates a 'Heading' hierarchy.
-
-NB: This function is really naive and inefficient.
+Exports a custom document using the given list of 'Db.Heading's. Using this
+function you can create custom filtering functions that retrieves headings
+from the database by some constraint, then pass those headings into this
+function to create a complete 'Document' and 'Heading' hierarchy.
 -}
-headingsFromRels :: [HeadingRel] -> [Heading]
-headingsFromRels rels = map findChildren $
-    filter (\(_, _, parentM) -> isNothing parentM) rels
-  where
-    isChild currId (_, _, (Just parId)) = currId == parId
-    isChild _ (_, _, Nothing)           = False
-    findChildren (hed, currId, _)
-        = let subs = map findChildren $ filter (isChild currId) rels
-          in  hed{ subHeadings = subs }
+exportFilterDocument :: (MonadIO m)
+                     => [Entity Db.Heading]
+                     -> ReaderT SqlBackend m Document
+exportFilterDocument dbHeadings = do
+    rels <- mapM exportHeadingRel dbHeadings
+    return $ Document "" (headingsFromRels rels)
 
 {-|
 Exports a complete heading from the database in a tuple with the database ID
@@ -145,8 +150,9 @@ Exports properties from the database for the given heading.
 exportProperties :: (MonadIO m)
                  => Key Db.Heading
                  -> ReaderT SqlBackend m Properties
-exportProperties hedId =   DbProperty.getByHeading hedId
-                       >>= return . HM.fromList . map fromDb
+exportProperties hedId
+    =   DbProperty.getByHeading hedId
+    >>= return . HM.fromList . map fromDb
   where
     fromDb (Entity _ p) = (Db.propertyKey p, Db.propertyValue p)
 
@@ -162,6 +168,22 @@ exportTags hedId = (map fromDb) `liftM` DbTag.getByHeading hedId
 
 -------------------------------------------------------------------------------
 -- ** Conversion
+
+{-|
+Takes a flat list of 'HeadingRel's and creates a 'Heading' hierarchy.
+
+NB: This function is really naive and inefficient. It probably has time
+complexity of O(n^∞) and you need a quantum computer to run it.
+-}
+headingsFromRels :: [HeadingRel] -> [Heading]
+headingsFromRels rels = map findChildren $
+    filter (\(_, _, parentM) -> isNothing parentM) rels
+  where
+    isChild currId (_, _, (Just parId)) = currId == parId
+    isChild _ (_, _, Nothing)           = False
+    findChildren (hed, currId, _)
+        = let subs = map findChildren $ filter (isChild currId) rels
+          in  hed{ subHeadings = subs }
 
 {-|
 Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is

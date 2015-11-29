@@ -51,7 +51,7 @@ mkDurationTest fname expDur = it ("duration example, " ++ fname) $ do
     content <- getExample fname
 
     dur <- runDb $ do
-        parseImport (T.pack fname) allowedTags content
+        void $ parseImport (T.pack fname) allowedTags content
         Clock.getTotalDuration
 
     dur `shouldBe` expDur
@@ -65,7 +65,7 @@ mkLengthTest fname hedLen tagLen clockLen = it ("length example, " ++ fname) $ d
     content <- getExample fname
 
     (headings, tags, clocks) <- runDb $ do
-        parseImport (T.pack fname) allowedTags content
+        void $ parseImport (T.pack fname) allowedTags content
 
         h <- Heading.getAll
         t <- Tag.getAll

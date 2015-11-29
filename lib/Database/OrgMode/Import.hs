@@ -1,4 +1,6 @@
 {-|
+Functionality to import different parts of the orgmode data structure tree.
+All parts have functions to import them separately.
 -}
 
 module Database.OrgMode.Import where
