@@ -67,12 +67,15 @@ This way we don't have duplicate tag names in the database.
 
 module Database.OrgMode.Types where
 
+import           Data.Default
+import           Data.Int (Int64)
 import           Data.OrgMode.Parse.Types (Priority(..), PlanningKeyword(..))
 
 import           Database.OrgMode.Internal.Import
 import           Database.OrgMode.Internal.PersistDerive()
 
 --------------------------------------------------------------------------------
+-- * Auto-generated data types
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Document
@@ -121,3 +124,48 @@ TagRel
     item TagId
     deriving Show
 |]
+
+--------------------------------------------------------------------------------
+-- * Manually created data types
+
+{-|
+Represents a summary of a 'Heading' that only contains the title and the total
+duration of all clocks for the 'Heading'.
+
+Is made to be used when displaying clock tables and other types of overviews.
+-}
+data HeadingShort = HeadingShort
+  { headingShortId       :: Int64
+  , headingShortTitle    :: Text
+  , headingShortDuration :: Int
+  } deriving (Show)
+
+{-|
+Represents a row in a 'ClockTable'. Each row consists of the name of the
+document, how long the total duration is (all 'Heading's clocks combined) and
+a list of 'HeadingShort's.
+-}
+data ClockRow = ClockRow
+  { clockRowDocumentId   :: Int64
+  , clockRowDuration     :: Int
+  , clockRowShorts       :: [HeadingShort]
+  } deriving (Show)
+
+{-|
+Represents a clock table which contains 'ClockRow's and a date range that
+'Heading's are shown based on their clockings.
+-}
+data ClockTable = ClockTable
+  { clockTableRows   :: [ClockRow]
+  , clockTableFilter :: HeadingFilter
+  } deriving (Show)
+
+
+data HeadingFilter = HeadingFilter
+  { headingFilterClockStart  :: Maybe UTCTime
+  , headingFilterClockEnd    :: Maybe UTCTime
+  , headingFilterDocumentIds :: [(Key Document)]
+  } deriving (Show)
+
+instance Default HeadingFilter where
+    def = HeadingFilter Nothing Nothing []
