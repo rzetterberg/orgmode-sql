@@ -8,11 +8,11 @@ This is the document text
   Some text inside the node 1
 ** DONE [#B] Child node 1                                           :development:
   SCHEDULED: <2015-11-21 Sat> DEADLINE: <2015-11-21 Sat>
-  CLOCK: [2015-11-21 Sat 14:43]--[2015-11-21 Sat 14:43] =>  0:00
+  CLOCK: [2015-11-21 Sat 14:43]--[2015-11-21 Sat 15:43] =>  1:00
 
   Some text inside the node 2
 *** DONE [#C] Child node 2                                      :development:
   SCHEDULED: <2015-11-21 Sat> DEADLINE: <2015-11-21 Sat>
-  CLOCK: [2015-11-21 Sat 14:43]--[2015-11-21 Sat 14:43] =>  0:00
+  CLOCK: [2015-11-21 Sat 13:43]--[2015-11-21 Sat 14:43] =>  1:00
 
   Some text inside the node 3

@@ -135,9 +135,12 @@ duration of all clocks for the 'Heading'.
 Is made to be used when displaying clock tables and other types of overviews.
 -}
 data HeadingShort = HeadingShort
-  { headingShortId       :: Int64
+  { headingShortDocId    :: Int64
+  , headingShortId       :: Int64
+  , headingShortParId    :: Maybe Int64
   , headingShortTitle    :: Text
   , headingShortDuration :: Int
+  , headingShortSubs     :: [HeadingShort]
   } deriving (Show)
 
 {-|

@@ -35,35 +35,24 @@ for all items.
 getRows :: (MonadIO m)
         => HeadingFilter
         -> ReaderT SqlBackend m [ClockRow]
-getRows hedFilter = shortsToRows `liftM` getShortParts hedFilter
-  where
-    shortsToRows = HM.foldrWithKey foldRow [] . mapParts emptyMap
-    foldRow :: Int64 -> [HeadingShort] -> [ClockRow] -> [ClockRow]
-    foldRow k v res = (ClockRow k 0 v) : res
-    emptyMap :: HashMap Int64 [HeadingShort]
-    emptyMap = HM.empty
-    mapParts m []                = m
-    mapParts m ((k, v):rest) =
-        let mNew = HM.insertWith (++) k [v] m
-        in mapParts mNew rest
+getRows hedFilter = shortsToRows `liftM` getShorts hedFilter
 
 {-|
-Retrieves all 'HeadingShort's in the database and pairs them up with the
-document they belong to by ID.
+Retrieves a list of 'HeadingShort' using the given 'HeadingFilter'. The list of
+'HeadingShort's have the right hierarchy, and is not just a flat list.
+The hierarchy is built using the 'mkShortsHierarchy' function.
 
-NB: Shorts will only be retrieved if they have clocks saved.
-Ordered by ID.
+NB: 'Heading's without clocks are ignored.
 -}
-getShortParts :: (MonadIO m)
-              => HeadingFilter
-              -> ReaderT SqlBackend m [(Int64, HeadingShort)]
-getShortParts hedFilter = map unWrap `liftM` select q
+getShorts :: (MonadIO m)
+          => HeadingFilter
+          -> ReaderT SqlBackend m [HeadingShort]
+getShorts hedFilter = (mkShortsHierarchy . map unWrap) `liftM` select q
   where
     (HeadingFilter startM endM docIds) = hedFilter
     q = from $ \(doc, heading, clock) -> do
         let docId    = doc ^. DocumentId
             hedId    = heading ^. HeadingId
-            hedTitle = heading ^. HeadingTitle
             hedDurM  = sum_ (clock ^. ClockDuration)
 
         where_ $ heading ^. HeadingDocument ==. docId
@@ -80,14 +69,75 @@ getShortParts hedFilter = map unWrap `liftM` select q
 
         groupBy hedId
 
-        return $ (docId, hedId, hedTitle, hedDurM)
-    unWrap (docId, hedId, hedTitle, hedDurM) =
-        let docKey = fromSqlKey (unValue docId)
-            hedKey = fromSqlKey (unValue hedId)
-            dur    = maybe 0 id (unValue hedDurM)
-            short  = HeadingShort hedKey (unValue hedTitle) dur
-        in (docKey, short)
+        return $ (heading, docId, hedDurM)
+    unWrap :: (Entity Heading, Value (Key Document), Value (Maybe Int))
+           -> HeadingShort
+    unWrap ((Entity headingId Heading{..}), docId, hedDurM) =
+        let docKey    = fromSqlKey (unValue docId)
+            hedKey    = fromSqlKey headingId
+            hedParKey = fromSqlKey <$> headingParent
+            dur       = maybe 0 id (unValue hedDurM)
+        in  HeadingShort docKey hedKey hedParKey headingTitle dur []
 
-whenJust :: (Monad m) => Maybe a -> (a -> m ()) -> m ()
+-------------------------------------------------------------------------------
+-- * Helpers
+
+{-|
+Helper for running a Monadic function on the given value when it is 'Just'.
+
+Instead of writing:
+
+> case valM of
+>   Just val -> myFunc val
+>   Nothing  -> return ()
+
+You can write:
+
+> whenJust valM myFunc
+
+And get the same result with less code.
+-}
+whenJust :: (Monad m)
+         => Maybe a     -- ^ Value to use
+         -> (a -> m ()) -- ^ Function to apply on pure value
+         -> m ()
 whenJust (Just v) f = f v
 whenJust Nothing _  = return ()
+
+{-|
+Takes a flat list of 'HeadingShort's and creates a 'HeadingShort' hierarchy.
+
+NB: This function is really naive and inefficient. It probably has time
+complexity of O(n^∞) and you need a quantum computer to run it.
+-}
+mkShortsHierarchy :: [HeadingShort] -> [HeadingShort]
+mkShortsHierarchy inp = map findChildren $ filter isRoot inp
+  where
+    isRoot :: HeadingShort -> Bool
+    isRoot HeadingShort{..} = case headingShortParId of
+        Nothing -> True
+        _       -> False
+    isChild :: Int64 -> HeadingShort -> Bool
+    isChild currParent HeadingShort{..}
+        = maybe False (currParent ==) headingShortParId
+    findChildren curr@HeadingShort{..} =
+        let subs = map findChildren $ filter (isChild headingShortId) inp
+        in  curr{ headingShortSubs = subs }
+
+
+{-|
+Creates a list of 'ClockRow's from a list of 'HeadingShort'. 'ClockRow's are
+matched and created from each 'HeadingShort's document ID.
+
+NB: This function needs to be run _after_ the 'HeadingShort' hierarchy is
+created. It should not be run on a flat list.
+-}
+shortsToRows :: [HeadingShort] -> [ClockRow]
+shortsToRows = go emptyMap
+  where
+    emptyMap :: HashMap Int64 [HeadingShort]
+    emptyMap = HM.empty
+    go m []     = map (\(k, v) -> ClockRow k 0 v) (HM.toList m)
+    go m (h:hs) =
+        let newM = HM.insertWith (++) (headingShortDocId h) [h] m
+        in  go newM hs
