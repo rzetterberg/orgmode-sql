@@ -67,9 +67,11 @@ This way we don't have duplicate tag names in the database.
 
 module Database.OrgMode.Types where
 
+import           Data.Aeson
 import           Data.Default
 import           Data.Int (Int64)
 import           Data.OrgMode.Parse.Types (Priority(..), PlanningKeyword(..))
+import           GHC.Generics
 
 import           Database.OrgMode.Internal.Import
 import           Database.OrgMode.Internal.PersistDerive()
@@ -141,7 +143,9 @@ data HeadingShort = HeadingShort
   , headingShortTitle    :: Text
   , headingShortDuration :: Int
   , headingShortSubs     :: [HeadingShort]
-  } deriving (Show)
+  } deriving (Show, Generic)
+
+instance ToJSON HeadingShort
 
 {-|
 Represents a row in a 'ClockTable'. Each row consists of the name of the
@@ -152,7 +156,9 @@ data ClockRow = ClockRow
   { clockRowDocumentId   :: Int64
   , clockRowDuration     :: Int
   , clockRowShorts       :: [HeadingShort]
-  } deriving (Show)
+  } deriving (Show, Generic)
+
+instance ToJSON ClockRow
 
 {-|
 Represents a clock table which contains 'ClockRow's and a date range that
@@ -162,7 +168,6 @@ data ClockTable = ClockTable
   { clockTableRows   :: [ClockRow]
   , clockTableFilter :: HeadingFilter
   } deriving (Show)
-
 
 data HeadingFilter = HeadingFilter
   { headingFilterClockStart  :: Maybe UTCTime
