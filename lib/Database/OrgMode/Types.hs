@@ -153,9 +153,9 @@ document, how long the total duration is (all 'Heading's clocks combined) and
 a list of 'HeadingShort's.
 -}
 data ClockRow = ClockRow
-  { clockRowDocumentId   :: Int64
-  , clockRowDuration     :: Int
-  , clockRowShorts       :: [HeadingShort]
+  { clockRowDocumentId   :: Int64          -- ^ Document all shorts belong to
+  , clockRowDuration     :: Int            -- ^ Total duration of all shorts
+  , clockRowShorts       :: [HeadingShort] -- ^ Matching shorts of this row
   } deriving (Show, Generic)
 
 instance ToJSON ClockRow
@@ -165,14 +165,75 @@ Represents a clock table which contains 'ClockRow's and a date range that
 'Heading's are shown based on their clockings.
 -}
 data ClockTable = ClockTable
-  { clockTableRows   :: [ClockRow]
-  , clockTableFilter :: HeadingFilter
+  { clockTableRows   :: [ClockRow]    -- ^ Matching rows
+  , clockTableFilter :: HeadingFilter -- ^ Filter used to build the table
   } deriving (Show)
 
+{-|
+Represents a filter that is used when retrieving 'Heading's, is used when
+building 'ClockTable's for example.
+
+'HeadingFilter' implements the 'Default' type class so you can use the
+'def' function from "Data.Default" to supply a filter with no constraints.
+
+Start of date range matches clocks that start on or after given date.
+
+For example say we have this 'Heading' parsed and saved in the database:
+
+>* This is a root section
+>  CLOCK: [2015-10-12 Sun 00:00]--[2015-10-15 Sun 00:00] =>  72:00
+
+This filter will produce a match:
+
+> import Data.Time.Calendar (fromGregorian)
+> import Data.Time.Clock (secondsToDiffTime, UTCTime(..))
+>
+> let startT = UTCTime (fromGregorian 2015 10 11) (secondsToDiffTime 0)
+> HeadingFilter (Just startT) Nothing []
+
+But using this filter will not:
+
+> let startT = UTCTime (fromGregorian 2015 10 15) (secondsToDiffTime 0)
+> HeadingFilter (Just startT) Nothing []
+
+End of date range matches clocks that end on or before given date.
+This filter will produce a match:
+
+> let endT = UTCTime (fromGregorian 2015 10 14) (secondsToDiffTime 0)
+> HeadingFilter Nothing (Just endT) []
+
+But using this filter will not:
+
+> let endT = UTCTime (fromGregorian 2015 10 16) (secondsToDiffTime 0)
+> HeadingFilter Nothing (Just endT) []
+
+This date range filter will produce a match:
+
+> let startT = UTCTime (fromGregorian 2015 10 11) (secondsToDiffTime 0)
+>     endT   = UTCTime (fromGregorian 2015 10 16) (secondsToDiffTime 0)
+> HeadingFilter (Just startT) (Just endT) []
+
+But using this filter will not:
+
+> let startT = UTCTime (fromGregorian 2015 10 13) (secondsToDiffTime 0)
+>     endT   = UTCTime (fromGregorian 2015 10 16) (secondsToDiffTime 0)
+> HeadingFilter (Just startT) (Just endT) []
+
+This will not either:
+
+> let startT = UTCTime (fromGregorian 2015 10 11) (secondsToDiffTime 0)
+>     endT   = UTCTime (fromGregorian 2015 10 14) (secondsToDiffTime 0)
+> HeadingFilter (Just startT) (Just endT) []
+
+This means when you supply a date range it will only match clocks that start
+and end within the range.
+
+Using an empty list of 'Document' IDs means matching all 'Document's.
+-}
 data HeadingFilter = HeadingFilter
-  { headingFilterClockStart  :: Maybe UTCTime
-  , headingFilterClockEnd    :: Maybe UTCTime
-  , headingFilterDocumentIds :: [(Key Document)]
+  { headingFilterClockStart  :: Maybe UTCTime    -- ^ Start of date range
+  , headingFilterClockEnd    :: Maybe UTCTime    -- ^ End of date range
+  , headingFilterDocumentIds :: [(Key Document)] -- ^ Documents to get items from
   } deriving (Show)
 
 instance Default HeadingFilter where

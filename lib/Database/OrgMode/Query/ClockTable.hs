@@ -1,6 +1,27 @@
-{-|
-CRUD functionality for 'ClockTable's.
--}
+-- | Special retrieval queries to build 'ClockTable's using 'HeadingFilter's.
+--
+-- 'ClockTable' is not a type saved directly in the database, it's a combination
+-- type used for presenting org-mode data.
+-- Should work similarly to
+-- <http://orgmode.org/manual/The-clock-table.html The clock table in emacs>.
+--
+-- = Usage
+--
+-- To retrieve a 'ClockTable' you only need to use the 'getTable' function and
+-- understand how 'HeadingFilter' (see docs for type for usage) works.
+--
+-- For example if you want to retrieve a 'ClockTable' with from all 'Heading's
+-- that have clocks in all 'Document's:
+--
+-- > import           Data.Default
+-- > import qualified Database.OrgMode.Query.ClockTable as ClockTable
+-- >
+-- > ctable <- ClockTable.getTable def
+--
+-- If you want to retrieve a 'ClockTable' with all 'Heading's from a specific
+-- document you use:
+--
+-- > ctable <- ClockTable.getTable def { headingFilterDocumentIds = [yourDocId] }
 module Database.OrgMode.Query.ClockTable where
 
 import           Control.Monad (unless)
@@ -17,6 +38,8 @@ import           Database.OrgMode.Types
 
 {-|
 Retrives a clocktable using the given 'HeadingFilter' for all items.
+
+See the docs of 'HeadingFilter' for more information about how the filter works.
 
 NB: Does not check that the given date range is valid.
 -}
