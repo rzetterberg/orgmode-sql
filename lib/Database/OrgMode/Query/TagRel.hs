@@ -17,3 +17,17 @@ add :: (MonadIO m)
     -> Key Tag
     -> ReaderT SqlBackend m (Key TagRel)
 add owner tag = P.insert (TagRel owner tag)
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes all 'TagRel's by given list of 'Heading' IDs.
+-}
+deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()
+deleteByHeadings hedIds =
+    delete $
+        from $ \(rel) -> do
+            where_ $ in_ (rel ^. TagRelHeading) (valList hedIds)
+
+            return ()

@@ -37,3 +37,17 @@ getByHeading hedId =
             where_ (property ^. PropertyHeading ==. heading ^. HeadingId)
 
             return property
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes all 'Properties's by given list of 'Heading' IDs.
+-}
+deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()
+deleteByHeadings hedIds =
+    delete $
+        from $ \(property) -> do
+            where_ $ in_ (property ^. PropertyHeading) (valList hedIds)
+
+            return ()

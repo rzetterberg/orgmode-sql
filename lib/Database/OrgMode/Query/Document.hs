@@ -8,6 +8,7 @@ import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
 import           Database.OrgMode.Types
+import qualified Database.OrgMode.Query.Heading as HeadingQ
 
 -------------------------------------------------------------------------------
 -- * Creation
@@ -35,3 +36,21 @@ ASC sorted by name.
 -}
 getAll :: (MonadIO m) => ReaderT SqlBackend m [Entity Document]
 getAll = P.selectList [] [P.Asc DocumentName]
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes all 'Documents's by given list of IDs.
+
+NB: Deletes all 'Heading's of each document too
+-}
+deleteByIds :: (MonadIO m) => [Key Document] -> ReaderT SqlBackend m ()
+deleteByIds docIds = do
+    HeadingQ.deleteByDocuments docIds
+
+    delete $
+        from $ \(doc) -> do
+            where_ $ in_ (doc ^. DocumentId) (valList docIds)
+
+            return ()

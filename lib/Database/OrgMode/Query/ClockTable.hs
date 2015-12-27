@@ -22,6 +22,7 @@
 -- document you use:
 --
 -- > ctable <- ClockTable.getTable def { headingFilterDocumentIds = [yourDocId] }
+
 module Database.OrgMode.Query.ClockTable where
 
 import           Control.Monad (unless)

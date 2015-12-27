@@ -38,3 +38,17 @@ getByHeading hedId =
             where_ (planning ^. PlanningHeading ==. heading ^. HeadingId)
 
             return planning
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes all 'Planning's by given list of 'Heading' IDs.
+-}
+deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()
+deleteByHeadings hedIds =
+    delete $
+        from $ \(planning) -> do
+            where_ $ in_ (planning ^. PlanningHeading) (valList hedIds)
+
+            return ()

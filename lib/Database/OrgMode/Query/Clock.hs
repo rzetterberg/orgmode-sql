@@ -93,3 +93,14 @@ Deletes all 'Clock's in the database.
 deleteAll :: (MonadIO m)
           => ReaderT SqlBackend m ()
 deleteAll = P.deleteWhere ([] :: [P.Filter Clock])
+
+{-|
+Deletes all 'Clock's by given list of 'Heading' IDs.
+-}
+deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()
+deleteByHeadings hedIds =
+    delete $
+        from $ \(clock) -> do
+            where_ $ in_ (clock ^. ClockHeading) (valList hedIds)
+
+            return ()
