@@ -95,6 +95,19 @@ deleteAll :: (MonadIO m)
 deleteAll = P.deleteWhere ([] :: [P.Filter Clock])
 
 {-|
+Deletes 'Clock's by list of IDs
+-}
+deleteByIds :: (MonadIO m)
+            => [Key Clock]
+            -> ReaderT SqlBackend m ()
+deleteByIds clockIds =
+    delete $
+        from $ \(clock) -> do
+            where_ $ in_ (clock ^. ClockId) (valList clockIds)
+
+            return ()
+
+{-|
 Deletes all 'Clock's by given list of 'Heading' IDs.
 -}
 deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()

@@ -64,3 +64,19 @@ getByHeading headingId =
             orderBy [asc (tag ^. TagName)]
 
             return tag
+
+-------------------------------------------------------------------------------
+-- * Deletion
+
+{-|
+Deletes 'Tag's by list of IDs
+-}
+deleteByIds :: (MonadIO m)
+            => [Key Tag]
+            -> ReaderT SqlBackend m ()
+deleteByIds tagIds =
+    delete $
+        from $ \(tag) -> do
+            where_ $ in_ (tag ^. TagId) (valList tagIds)
+
+            return ()

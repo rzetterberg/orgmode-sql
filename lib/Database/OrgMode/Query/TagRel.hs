@@ -22,6 +22,19 @@ add owner tag = P.insert (TagRel owner tag)
 -- * Deletion
 
 {-|
+Deletes 'TagRel's by list of IDs
+-}
+deleteByIds :: (MonadIO m)
+            => [Key TagRel]
+            -> ReaderT SqlBackend m ()
+deleteByIds relIds =
+    delete $
+        from $ \(rel) -> do
+            where_ $ in_ (rel ^. TagRelId) (valList relIds)
+
+            return ()
+
+{-|
 Deletes all 'TagRel's by given list of 'Heading' IDs.
 -}
 deleteByHeadings :: (MonadIO m) => [Key Heading] -> ReaderT SqlBackend m ()
