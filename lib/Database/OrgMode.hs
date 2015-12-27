@@ -299,4 +299,12 @@
 -- I have done a bad job at explaining that. Feel free to open a
 -- <https://github.com/rzetterberg/orgmode-sql github issue> if that is the case.
 
-module Database.OrgMode where
+module Database.OrgMode
+       ( textImportDocument
+       , importDocument
+       , textExportDocument
+       , exportDocument
+       ) where
+
+import           Database.OrgMode.Import (textImportDocument, importDocument)
+import           Database.OrgMode.Export (textExportDocument, exportDocument)
