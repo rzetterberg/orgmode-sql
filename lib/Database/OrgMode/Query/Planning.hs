@@ -13,11 +13,14 @@ import           Database.OrgMode.Types
 -------------------------------------------------------------------------------
 -- * Creation
 
+{-|
+Creates a new 'Planning' in the database from the given data.
+-}
 add :: (MonadIO m)
-    => Key Heading
-    -> PlanningKeyword
-    -> UTCTime
-    -> ReaderT SqlBackend m (Key Planning)
+    => Key Heading                         -- ^ Owner of the 'Planning'
+    -> PlanningKeyword                     -- ^ Keyword (deadline, schedule, etc)
+    -> UTCTime                             -- ^ Time for the planning
+    -> ReaderT SqlBackend m (Key Planning) -- ^ ID of created 'Planning'
 add owner keyword time = P.insert (Planning owner keyword time)
 
 -------------------------------------------------------------------------------
@@ -25,8 +28,6 @@ add owner keyword time = P.insert (Planning owner keyword time)
 
 {-|
 Retrives all 'Planning's by 'Heading' Id.
-
-ASC sorted by clock start.
 -}
 getByHeading :: (MonadIO m)
              => Key Heading

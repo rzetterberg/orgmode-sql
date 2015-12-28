@@ -12,10 +12,15 @@ import           Database.OrgMode.Types
 -------------------------------------------------------------------------------
 -- * Creation
 
+{-|
+Creates a 'TagRel' in the database from given data. This represents ownership of
+a 'Tag' for a 'Heading'. See more in "OrgMode.Database.Types" for details on
+ownership.
+-}
 add :: (MonadIO m)
-    => Key Heading
-    -> Key Tag
-    -> ReaderT SqlBackend m (Key TagRel)
+    => Key Heading                       -- ^ Heading that has the tag
+    -> Key Tag                           -- ^ Tag to use
+    -> ReaderT SqlBackend m (Key TagRel) -- ^ ID of created 'TagRel'
 add owner tag = P.insert (TagRel owner tag)
 
 -------------------------------------------------------------------------------

@@ -16,6 +16,9 @@ import qualified Database.OrgMode.Query.TagRel as TagRelQ
 -------------------------------------------------------------------------------
 -- * Creation
 
+{-|
+Inserts the given 'Heading' into the database and returns the given ID.
+-}
 add :: (MonadIO m) => Heading -> ReaderT SqlBackend m (Key Heading)
 add = P.insert
 

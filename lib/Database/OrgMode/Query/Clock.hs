@@ -14,15 +14,14 @@ import qualified Database.OrgMode.Util.Time as Time
 -- * Creation
 
 {-|
-Adds the given 'Document' into the database. Simply a wrapper for persists'
-'insert' function.
+Inserts the given 'Clock' data into the database.
 -}
 add :: (MonadIO m)
-    => Key Heading
-    -> Bool
-    -> UTCTime
-    -> Maybe UTCTime
-    -> ReaderT SqlBackend m (Key Clock)
+    => Key Heading                      -- ^ Heading the clock belongs to
+    -> Bool                             -- ^ Is clock active?
+    -> UTCTime                          -- ^ Start time of clock
+    -> Maybe UTCTime                    -- ^ End time of clock
+    -> ReaderT SqlBackend m (Key Clock) -- ^ ID of created clock
 add owner active start endM = P.insert $
     Clock owner active start endM (Time.utcToDuration start endM)
 

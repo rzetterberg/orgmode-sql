@@ -12,11 +12,14 @@ import           Database.OrgMode.Types
 -------------------------------------------------------------------------------
 -- * Creation
 
+{-|
+Creates a 'Property' in the database from the given data.
+-}
 add :: (MonadIO m)
-    => Key Heading
-    -> Text
-    -> Text
-    -> ReaderT SqlBackend m (Key Property)
+    => Key Heading                         -- ^ Owner
+    -> Text                                -- ^ Key
+    -> Text                                -- ^ Value
+    -> ReaderT SqlBackend m (Key Property) -- ^ ID of created 'Property'
 add owner key value = P.insert (Property owner key value)
 
 -------------------------------------------------------------------------------
@@ -24,8 +27,6 @@ add owner key value = P.insert (Property owner key value)
 
 {-|
 Retrives all 'Property's by 'Heading' Id.
-
-ASC sorted by clock start.
 -}
 getByHeading :: (MonadIO m)
              => Key Heading

@@ -12,9 +12,13 @@ import           Database.OrgMode.Types
 -------------------------------------------------------------------------------
 -- * Creation
 
+{-|
+Adds the given tag into the database. If a tag with the same unique name exists
+no tag is added and the ID of the current one is returned instead.
+-}
 add :: (MonadIO m)
-    => Text
-    -> ReaderT SqlBackend m (Key Tag)
+    => Text                           -- ^ Tag name
+    -> ReaderT SqlBackend m (Key Tag) -- ^ Current ID or ID of newly created tag
 add name = P.getBy (UniqueTag name) >>= getCurrId
   where
     getCurrId (Just (Entity currId _ )) = return currId
