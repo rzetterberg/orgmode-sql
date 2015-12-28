@@ -1,14 +1,14 @@
 {-|
 CRUD functionality for 'Planning's.
 -}
-module Database.OrgMode.Query.Planning where
+module Database.OrgMode.Internal.Query.Planning where
 
 import           Data.OrgMode.Parse.Types (PlanningKeyword(..))
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
+import           Database.OrgMode.Internal.Types
 
 -------------------------------------------------------------------------------
 -- * Creation

@@ -2,7 +2,7 @@
 Specific unit tests for 'ClockTable' queries.
 -}
 
-module Database.Query.ClockTableSpec (spec) where
+module Database.Export.ClockTableSpec (spec) where
 
 import           Data.Default
 import           TestImport
@@ -10,7 +10,7 @@ import           Data.Time.Calendar (fromGregorian)
 import           Data.Time.Clock (secondsToDiffTime, UTCTime(..))
 
 import           Database.OrgMode.Types
-import qualified Database.OrgMode.Query.ClockTable as ClockTable
+import qualified Database.OrgMode.Export.ClockTable as ClockTable
 
 -------------------------------------------------------------------------------
 

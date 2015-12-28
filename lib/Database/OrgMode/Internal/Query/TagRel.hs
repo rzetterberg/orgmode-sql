@@ -1,21 +1,21 @@
 {-|
 CRUD functionality for 'TagRel's.
 -}
-module Database.OrgMode.Query.TagRel where
+module Database.OrgMode.Internal.Query.TagRel where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
+import           Database.OrgMode.Internal.Types
 
 -------------------------------------------------------------------------------
 -- * Creation
 
 {-|
 Creates a 'TagRel' in the database from given data. This represents ownership of
-a 'Tag' for a 'Heading'. See more in "OrgMode.Database.Types" for details on
-ownership.
+a 'Tag' for a 'Heading'. See more in "OrgMode.Database.Internal.Types" for
+details on ownership.
 -}
 add :: (MonadIO m)
     => Key Heading                       -- ^ Heading that has the tag

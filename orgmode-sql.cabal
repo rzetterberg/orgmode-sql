@@ -18,21 +18,24 @@ library
   hs-source-dirs: lib
 
   exposed-modules: Database.OrgMode
-                 , Database.OrgMode.Render.OrgModeText
-                 , Database.OrgMode.Export
-                 , Database.OrgMode.Import
+                 , Database.OrgMode.Export.ClockTable
+                 , Database.OrgMode.Export.OrgParse
+                 , Database.OrgMode.Export.Text
+                 , Database.OrgMode.Import.OrgParse
+                 , Database.OrgMode.Import.Text
+                 , Database.OrgMode.Internal.Convert.OrgParse
+                 , Database.OrgMode.Internal.Convert.Time
                  , Database.OrgMode.Internal.Import
                  , Database.OrgMode.Internal.PersistDerive
+                 , Database.OrgMode.Internal.Query.Clock
+                 , Database.OrgMode.Internal.Query.Document
+                 , Database.OrgMode.Internal.Query.Heading
+                 , Database.OrgMode.Internal.Query.Planning
+                 , Database.OrgMode.Internal.Query.Property
+                 , Database.OrgMode.Internal.Query.Tag
+                 , Database.OrgMode.Internal.Query.TagRel
+                 , Database.OrgMode.Internal.Types
                  , Database.OrgMode.Types
-                 , Database.OrgMode.Util.Time
-                 , Database.OrgMode.Query.Clock
-                 , Database.OrgMode.Query.ClockTable
-                 , Database.OrgMode.Query.Document
-                 , Database.OrgMode.Query.Heading
-                 , Database.OrgMode.Query.Planning
-                 , Database.OrgMode.Query.Property
-                 , Database.OrgMode.Query.Tag
-                 , Database.OrgMode.Query.TagRel
 
   ghc-options:
         -Wall

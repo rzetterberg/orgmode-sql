@@ -1,24 +1,9 @@
 {-|
-Contains 'Buildable' instances for all orgmode-parse types along with helper
-functionality. When building a whole orgmode-parse 'Document' it will produce
-the <http://orgmode.org/worg/dev/org-syntax.html org-mode plaintext format>.
-
-To produce a strict 'Text' from a 'Document' just use the 'export' function
+To produce a strict 'Text' from a orgmode-parse 'Document' just use the 'toText' function
 from this module.
-
-In case you want to procude a lazy 'Text' you can use:
-
-> import Data.Text.Buildable
-> import Data.Text.Lazy.Builder
-> toLazyText (render myDocument)
-
-All 'render' does is to wrap that with strict conversion:
-
-> render :: Document -> Text
-> render = TL.toStrict . toLazyText . mkDocument
 -}
 
-module Database.OrgMode.Render.OrgModeText where
+module Database.OrgMode.Internal.Convert.OrgParse where
 
 import           Data.OrgMode.Parse.Types
 import           Data.Text (Text)
@@ -36,8 +21,8 @@ import qualified Data.Text.Lazy as TL
 {-|
 Renders the given document as a strict 'Text'.
 -}
-render :: Document -> Text
-render = TL.toStrict . toLazyText . mkDocument
+toText :: Document -> Text
+toText = TL.toStrict . toLazyText . mkDocument
 
 -------------------------------------------------------------------------------
 -- * Builder makers

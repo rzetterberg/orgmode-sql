@@ -23,7 +23,7 @@
 --
 -- > ctable <- ClockTable.getTable def { headingFilterDocumentIds = [yourDocId] }
 
-module Database.OrgMode.Query.ClockTable where
+module Database.OrgMode.Export.ClockTable where
 
 import           Control.Monad (unless)
 import           Data.Int (Int64)
@@ -32,6 +32,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.HashMap.Strict (HashMap)
 
 import           Database.OrgMode.Internal.Import
+import           Database.OrgMode.Internal.Types
 import           Database.OrgMode.Types
 
 -------------------------------------------------------------------------------

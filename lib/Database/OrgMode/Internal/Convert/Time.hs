@@ -3,15 +3,15 @@ Utility functions for different types of conversions between libraries and
 time systems.
 -}
 
-module Database.OrgMode.Util.Time where
+module Database.OrgMode.Internal.Convert.Time where
 
 import           Data.OrgMode.Parse.Types
 import           Data.Text (Text)
 import           Data.Time.Clock (UTCTime(..))
-import qualified Data.Time.Calendar as Time
-import qualified Data.Time.Clock as Time
-import qualified Data.Time.Calendar.WeekDate as Time
 import           Prelude
+import qualified Data.Time.Calendar as Time
+import qualified Data.Time.Calendar.WeekDate as Time
+import qualified Data.Time.Clock as Time
 
 -------------------------------------------------------------------------------
 -- * Calculations

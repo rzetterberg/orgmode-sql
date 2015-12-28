@@ -1,14 +1,14 @@
 {-|
 CRUD functionality for 'Document's.
 -}
-module Database.OrgMode.Query.Document where
+module Database.OrgMode.Internal.Query.Document where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
-import qualified Database.OrgMode.Query.Heading as HeadingQ
+import           Database.OrgMode.Internal.Types
+import qualified Database.OrgMode.Internal.Query.Heading as HeadingQ
 
 -------------------------------------------------------------------------------
 -- * Creation

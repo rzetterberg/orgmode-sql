@@ -16,7 +16,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 import qualified Database.OrgMode as Db
-import qualified Database.OrgMode.Types as Db
+import qualified Database.OrgMode.Internal.Types as Db
 
 -------------------------------------------------------------------------------
 

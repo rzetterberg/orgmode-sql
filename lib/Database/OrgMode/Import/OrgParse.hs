@@ -3,50 +3,24 @@ Functionality to import different parts of the orgmode data structure tree.
 All parts have functions to import them separately.
 -}
 
-module Database.OrgMode.Import where
+module Database.OrgMode.Import.OrgParse where
 
-import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
-import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
-import           Data.Text (strip, append)
+import           Data.Text (strip)
 import qualified Data.HashMap.Strict as HM
 
 import           Database.OrgMode.Internal.Import
-import qualified Database.OrgMode.Query.Clock as DbClock
-import qualified Database.OrgMode.Query.Document as DbDocument
-import qualified Database.OrgMode.Query.Heading as DbHeading
-import qualified Database.OrgMode.Query.Planning as DbPlanning
-import qualified Database.OrgMode.Query.Property as DbProperty
-import qualified Database.OrgMode.Query.Tag as DbTag
-import qualified Database.OrgMode.Query.TagRel as DbTagRel
-import qualified Database.OrgMode.Types as Db
-import qualified Database.OrgMode.Util.Time as TimeUtil
+import qualified Database.OrgMode.Internal.Convert.Time as TimeConvert
+import qualified Database.OrgMode.Internal.Query.Clock as DbClock
+import qualified Database.OrgMode.Internal.Query.Document as DbDocument
+import qualified Database.OrgMode.Internal.Query.Heading as DbHeading
+import qualified Database.OrgMode.Internal.Query.Planning as DbPlanning
+import qualified Database.OrgMode.Internal.Query.Property as DbProperty
+import qualified Database.OrgMode.Internal.Query.Tag as DbTag
+import qualified Database.OrgMode.Internal.Query.TagRel as DbTagRel
+import qualified Database.OrgMode.Internal.Types as Db
 
 -------------------------------------------------------------------------------
--- * Plain text
-
-{-|
-Takes a strict 'Text' and tries to parse the document and import it to the
-database.
-
-Returns the document ID of the created document or the error message from
-the parser.
--}
-textImportDocument :: (MonadIO m)
-                   => Text                    -- ^ Name of the document
-                   -> [Text]                  -- ^ Keywords to allow
-                   -> Text                    -- ^ org-mode document contents
-                   -> ReaderT SqlBackend m (Either String (Key Db.Document))
-textImportDocument docName keywords orgContent =
-    case result of
-        Left  err -> return (Left err)
-        Right doc -> Right `liftM` importDocument docName doc
-  where
-    result = parseOnly (OrgParse.parseDocument keywords)
-                       (append orgContent "\n")
-
--------------------------------------------------------------------------------
--- * Orgmode-parse types
 
 {-|
 Takes a parsed document and it's name and inserts it into the database. The name
@@ -139,8 +113,8 @@ importClock headingId (Just tstamp, _)
     = DbClock.add headingId tsActive start endM >>= return . Just
   where
     Timestamp{..} = tstamp
-    start = TimeUtil.dateTimeToUTC tsTime
-    endM  = TimeUtil.dateTimeToUTC <$> tsEndTime
+    start = TimeConvert.dateTimeToUTC tsTime
+    endM  = TimeConvert.dateTimeToUTC <$> tsEndTime
 
 {-|
 Imports given planning into the database and returns the ID it was given.
@@ -157,7 +131,7 @@ importPlanning hedId (kword, tstamp)
     = DbPlanning.add hedId kword start
   where
     Timestamp{..} = tstamp
-    start = TimeUtil.dateTimeToUTC tsTime
+    start = TimeConvert.dateTimeToUTC tsTime
 
 {-|
 Imports given property into the database and returns the ID it was given.

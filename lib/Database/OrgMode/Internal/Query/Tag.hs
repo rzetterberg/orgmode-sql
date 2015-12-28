@@ -1,13 +1,13 @@
 {-|
 CRUD functionality for 'Tag's.
 -}
-module Database.OrgMode.Query.Tag where
+module Database.OrgMode.Internal.Query.Tag where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
+import           Database.OrgMode.Internal.Types
 
 -------------------------------------------------------------------------------
 -- * Creation

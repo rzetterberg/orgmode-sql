@@ -1,13 +1,13 @@
 {-|
 CRUD functionality for 'Property's.
 -}
-module Database.OrgMode.Query.Property where
+module Database.OrgMode.Internal.Query.Property where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
+import           Database.OrgMode.Internal.Types
 
 -------------------------------------------------------------------------------
 -- * Creation

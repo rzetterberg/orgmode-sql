@@ -8,10 +8,12 @@ module Database.ExampleSpec (spec) where
 import           TestImport
 import qualified Data.Text as T
 
-import qualified Database.OrgMode as OrgDb
-import qualified Database.OrgMode.Query.Clock as Clock
-import qualified Database.OrgMode.Query.Heading as Heading
-import qualified Database.OrgMode.Query.Tag as Tag
+import qualified Database.OrgMode.Export.OrgParse as Export
+import qualified Database.OrgMode.Export.Text as Export
+import qualified Database.OrgMode.Import.Text as Import
+import qualified Database.OrgMode.Internal.Query.Clock as Clock
+import qualified Database.OrgMode.Internal.Query.Heading as Heading
+import qualified Database.OrgMode.Internal.Query.Tag as Tag
 
 -------------------------------------------------------------------------------
 
@@ -90,12 +92,12 @@ mkTextExportTest fname = it ("export text example, " ++ fname) $ do
     origin <- getExample fname
 
     (parsed1, parsed2) <- runDb $ do
-        (Right docId1) <- OrgDb.textImportDocument fnameT allowedTags origin
-        (Just parsed1) <- OrgDb.exportDocument docId1
-        (Just raw1)    <- OrgDb.textExportDocument docId1
+        (Right docId1) <- Import.textImportDocument fnameT allowedTags origin
+        (Just parsed1) <- Export.exportDocument docId1
+        (Just raw1)    <- Export.textExportDocument docId1
 
-        (Right docId2) <- OrgDb.textImportDocument "test" allowedTags raw1
-        (Just parsed2) <- OrgDb.exportDocument docId2
+        (Right docId2) <- Import.textImportDocument "test" allowedTags raw1
+        (Just parsed2) <- Export.exportDocument docId2
 
         return (parsed1, parsed2)
 

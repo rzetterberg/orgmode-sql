@@ -1,17 +1,17 @@
 {-|
 CRUD functionality for 'Heading's.
 -}
-module Database.OrgMode.Query.Heading where
+module Database.OrgMode.Internal.Query.Heading where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
-import qualified Database.OrgMode.Query.Clock as ClockQ
-import qualified Database.OrgMode.Query.Planning as PlanningQ
-import qualified Database.OrgMode.Query.Property as PropertyQ
-import qualified Database.OrgMode.Query.TagRel as TagRelQ
+import           Database.OrgMode.Internal.Types
+import qualified Database.OrgMode.Internal.Query.Clock as ClockQ
+import qualified Database.OrgMode.Internal.Query.Planning as PlanningQ
+import qualified Database.OrgMode.Internal.Query.Property as PropertyQ
+import qualified Database.OrgMode.Internal.Query.TagRel as TagRelQ
 
 -------------------------------------------------------------------------------
 -- * Creation

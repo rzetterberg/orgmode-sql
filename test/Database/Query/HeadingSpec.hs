@@ -7,7 +7,7 @@ module Database.Query.HeadingSpec (spec) where
 
 import           TestImport
 
-import qualified Database.OrgMode.Query.Heading as Heading
+import qualified Database.OrgMode.Internal.Query.Heading as Heading
 
 -------------------------------------------------------------------------------
 

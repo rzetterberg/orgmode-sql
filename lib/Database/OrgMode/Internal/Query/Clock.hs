@@ -1,14 +1,14 @@
 {-|
 CRUD functionality for 'Clock's.
 -}
-module Database.OrgMode.Query.Clock where
+module Database.OrgMode.Internal.Query.Clock where
 
 import           Database.Esqueleto
 import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
-import           Database.OrgMode.Types
-import qualified Database.OrgMode.Util.Time as Time
+import           Database.OrgMode.Internal.Types
+import           Database.OrgMode.Internal.Convert.Time (utcToDuration)
 
 -------------------------------------------------------------------------------
 -- * Creation
@@ -23,7 +23,7 @@ add :: (MonadIO m)
     -> Maybe UTCTime                    -- ^ End time of clock
     -> ReaderT SqlBackend m (Key Clock) -- ^ ID of created clock
 add owner active start endM = P.insert $
-    Clock owner active start endM (Time.utcToDuration start endM)
+    Clock owner active start endM (utcToDuration start endM)
 
 -------------------------------------------------------------------------------
 -- * Retrieval

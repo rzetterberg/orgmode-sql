@@ -12,9 +12,10 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-import qualified Database.OrgMode as OrgDb
-import qualified Database.OrgMode.Query.Clock as Clock
-import           Database.OrgMode.Types (migrateAll)
+import qualified Database.OrgMode.Import.Text as OrgDb
+import qualified Database.OrgMode.Export.Text as OrgDb
+import qualified Database.OrgMode.Internal.Query.Clock as Clock
+import           Database.OrgMode.Internal.Types (migrateAll)
 
 -------------------------------------------------------------------------------
 

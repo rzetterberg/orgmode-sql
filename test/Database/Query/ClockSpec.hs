@@ -7,8 +7,8 @@ module Database.Query.ClockSpec (spec) where
 
 import           TestImport
 
-import qualified Database.OrgMode.Query.Heading as Heading
-import qualified Database.OrgMode.Query.Clock as Clock
+import qualified Database.OrgMode.Internal.Query.Heading as Heading
+import qualified Database.OrgMode.Internal.Query.Clock as Clock
 
 -------------------------------------------------------------------------------
 

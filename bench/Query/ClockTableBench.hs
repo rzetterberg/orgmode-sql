@@ -7,8 +7,8 @@ import           Data.Default
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Text as T
 
-import qualified Database.OrgMode.Import as OrgDb
-import qualified Database.OrgMode.Query.ClockTable as ClockTable
+import           Database.OrgMode.Import.OrgParse (importDocument)
+import qualified Database.OrgMode.Export.ClockTable as ClockTable
 
 --------------------------------------------------------------------------------
 
@@ -47,5 +47,5 @@ mkClockTableBench fname = getExample fname >>=
   where
     go (Left err)  = error $ "Example could not be parsed: " ++ err
     go (Right doc) = void $ runDb $ do
-        void $ OrgDb.importDocument (T.pack fname) doc
+        void $ importDocument (T.pack fname) doc
         ClockTable.getTable def

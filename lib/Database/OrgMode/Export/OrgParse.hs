@@ -3,7 +3,7 @@ Functionality to export different parts of the orgmode data structure tree.
 All parts have functions to export them separately.
 -}
 
-module Database.OrgMode.Export where
+module Database.OrgMode.Export.OrgParse where
 
 import           Data.Maybe (isNothing)
 import           Data.OrgMode.Parse.Types
@@ -11,40 +11,22 @@ import           Database.Persist (Entity(..))
 import qualified Data.HashMap.Strict as HM
 
 import           Database.OrgMode.Internal.Import
-import qualified Database.OrgMode.Render.OrgModeText as OrgRender
-import qualified Database.OrgMode.Query.Clock as DbClock
-import qualified Database.OrgMode.Query.Document as DbDocument
-import qualified Database.OrgMode.Query.Heading as DbHeading
-import qualified Database.OrgMode.Query.Planning as DbPlanning
-import qualified Database.OrgMode.Query.Property as DbProperty
-import qualified Database.OrgMode.Query.Tag as DbTag
-import qualified Database.OrgMode.Types as Db
-import qualified Database.OrgMode.Util.Time as TimeUtil
+import qualified Database.OrgMode.Internal.Query.Clock as DbClock
+import qualified Database.OrgMode.Internal.Query.Document as DbDocument
+import qualified Database.OrgMode.Internal.Query.Heading as DbHeading
+import qualified Database.OrgMode.Internal.Query.Planning as DbPlanning
+import qualified Database.OrgMode.Internal.Query.Property as DbProperty
+import qualified Database.OrgMode.Internal.Query.Tag as DbTag
+import qualified Database.OrgMode.Internal.Convert.Time as TimeConvert
+import qualified Database.OrgMode.Internal.Types as Db
 
 -------------------------------------------------------------------------------
--- * Types
 
 {-|
 Represents the hierarchy relationship between 'Heading's for use in a flat
 list. The heading, it's database ID and the optional parent database ID.
 -}
 type HeadingRel = (Heading, Key Db.Heading, Maybe (Key Db.Heading))
-
--------------------------------------------------------------------------------
--- * Plain text
-
-{-|
-Exports all data from the database to a plain text org-mode document as a strict
-'Text'.
--}
-textExportDocument :: (MonadIO m)
-                   => Key Db.Document
-                   -> ReaderT SqlBackend m (Maybe Text)
-textExportDocument docId
-    = (fmap OrgRender.render) `liftM` exportDocument docId
-
--------------------------------------------------------------------------------
--- * Orgmode-parse types
 
 {-|
 Exports a complete document along with it's headings from the database using
@@ -124,7 +106,7 @@ exportPlannings hedId = do
   where
     fromDb (Entity _ p)
         = let tstamp = Timestamp start{ hourMinute = Nothing } True Nothing
-              start  = TimeUtil.utcToDateTime (Db.planningTime p)
+              start  = TimeConvert.utcToDateTime (Db.planningTime p)
           in (Db.planningKeyword p, tstamp)
 
 {-|
@@ -137,9 +119,9 @@ exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
   where
     fromDb (Entity _ clock)
         = let tstamp  = Timestamp start (Db.clockActive clock) endM
-              start   = TimeUtil.utcToDateTime (Db.clockStart clock)
-              endM    = TimeUtil.utcToDateTime <$> Db.clockEnd clock
-              hourMin = TimeUtil.secsToClock (Db.clockDuration clock)
+              start   = TimeConvert.utcToDateTime (Db.clockStart clock)
+              endM    = TimeConvert.utcToDateTime <$> Db.clockEnd clock
+              hourMin = TimeConvert.secsToClock (Db.clockDuration clock)
           in (Just tstamp, Just hourMin)
 
 {-|

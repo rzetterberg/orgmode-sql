@@ -8,7 +8,7 @@ module Database.ExportSpec (spec) where
 import           TestImport
 import           Data.OrgMode.Parse.Types
 
-import qualified Database.OrgMode as OrgDb
+import qualified Database.OrgMode.Export.OrgParse as Export
 
 -------------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ spec =
           (Just doc) <- runDb $ do
               docId <- importExample "2_sections.org"
 
-              OrgDb.exportDocument docId
+              Export.exportDocument docId
 
           let headings = documentHeadings doc
 
@@ -28,7 +28,7 @@ spec =
           (Just doc) <- runDb $ do
               docId <- importExample "all_data.org"
 
-              OrgDb.exportDocument docId
+              Export.exportDocument docId
 
           let headings = documentHeadings doc
 

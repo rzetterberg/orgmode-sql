@@ -16,7 +16,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 import qualified Database.OrgMode as OrgDb
-import           Database.OrgMode.Types (migrateAll)
+import           Database.OrgMode.Internal.Types (migrateAll)
 
 -------------------------------------------------------------------------------
 

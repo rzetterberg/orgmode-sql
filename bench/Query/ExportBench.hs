@@ -6,8 +6,8 @@ import           Data.Attoparsec.Text (parseOnly)
 import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import qualified Data.Text as T
 
-import qualified Database.OrgMode.Import as OrgDb
-import qualified Database.OrgMode.Export as OrgDb
+import           Database.OrgMode.Import.OrgParse (importDocument)
+import           Database.OrgMode.Export.OrgParse (exportDocument)
 
 --------------------------------------------------------------------------------
 
@@ -46,4 +46,4 @@ mkExportBench fname = getExample fname >>=
   where
     go (Left err)  = error $ "Example could not be parsed: " ++ err
     go (Right doc) = void $ runDb $
-        OrgDb.importDocument (T.pack fname) doc >>= OrgDb.exportDocument
+        importDocument (T.pack fname) doc >>= exportDocument
