@@ -8,6 +8,7 @@ import qualified Database.Persist as P
 
 import           Database.OrgMode.Internal.Import
 import           Database.OrgMode.Types
+import qualified Database.OrgMode.Util.Time as Time
 
 -------------------------------------------------------------------------------
 -- * Creation
@@ -21,9 +22,9 @@ add :: (MonadIO m)
     -> Bool
     -> UTCTime
     -> Maybe UTCTime
-    -> Int
     -> ReaderT SqlBackend m (Key Clock)
-add owner active start endM dur = P.insert $ Clock owner active start endM dur
+add owner active start endM = P.insert $
+    Clock owner active start endM (Time.utcToDuration start endM)
 
 -------------------------------------------------------------------------------
 -- * Retrieval

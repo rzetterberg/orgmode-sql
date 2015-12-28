@@ -24,6 +24,7 @@ library
                  , Database.OrgMode.Internal.Import
                  , Database.OrgMode.Internal.PersistDerive
                  , Database.OrgMode.Types
+                 , Database.OrgMode.Util.Time
                  , Database.OrgMode.Query.Clock
                  , Database.OrgMode.Query.ClockTable
                  , Database.OrgMode.Query.Document

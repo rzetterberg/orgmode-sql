@@ -7,11 +7,8 @@ module Database.OrgMode.Export where
 
 import           Data.Maybe (isNothing)
 import           Data.OrgMode.Parse.Types
-import           Data.Time.Clock (UTCTime(..))
 import           Database.Persist (Entity(..))
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Time.Calendar as T
-import qualified Data.Time.Calendar.WeekDate as T
 
 import           Database.OrgMode.Internal.Import
 import qualified Database.OrgMode.Render.OrgModeText as OrgRender
@@ -22,6 +19,7 @@ import qualified Database.OrgMode.Query.Planning as DbPlanning
 import qualified Database.OrgMode.Query.Property as DbProperty
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Types as Db
+import qualified Database.OrgMode.Util.Time as TimeUtil
 
 -------------------------------------------------------------------------------
 -- * Types
@@ -126,7 +124,7 @@ exportPlannings hedId = do
   where
     fromDb (Entity _ p)
         = let tstamp = Timestamp start{ hourMinute = Nothing } True Nothing
-              start  = utcToDateTime (Db.planningTime p)
+              start  = TimeUtil.utcToDateTime (Db.planningTime p)
           in (Db.planningKeyword p, tstamp)
 
 {-|
@@ -139,9 +137,9 @@ exportClocks hedId = (map fromDb) `liftM` DbClock.getByHeading hedId
   where
     fromDb (Entity _ clock)
         = let tstamp  = Timestamp start (Db.clockActive clock) endM
-              start   = utcToDateTime (Db.clockStart clock)
-              endM    = utcToDateTime <$> Db.clockEnd clock
-              hourMin = secsToClock (Db.clockDuration clock)
+              start   = TimeUtil.utcToDateTime (Db.clockStart clock)
+              endM    = TimeUtil.utcToDateTime <$> Db.clockEnd clock
+              hourMin = TimeUtil.secsToClock (Db.clockDuration clock)
           in (Just tstamp, Just hourMin)
 
 {-|
@@ -184,49 +182,3 @@ headingsFromRels rels = map findChildren $
     findChildren (hed, currId, _)
         = let subs = map findChildren $ filter (isChild currId) rels
           in  hed{ subHeadings = subs }
-
-{-|
-Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
-used for convenience when calculating the duration of two 'DateTime's.
--}
-utcToDateTime :: UTCTime
-              -> DateTime
-utcToDateTime UTCTime{..}
-    = DateTime { yearMonthDay = ymd
-               , dayName      = Just (weekDayToLit weekDay)
-               , hourMinute   = Just (secsToClock seconds)
-               , repeater     = Nothing
-               , delay        = Nothing
-               }
-  where
-    ymd                = YMD' $ YearMonthDay (fromInteger year) month day
-    (seconds, _)       = properFraction utctDayTime
-    (year, month, day) = T.toGregorian utctDay
-    (_, _, weekDay)    = T.toWeekDate utctDay
-
-{-|
-Helper to convert seconds into a clock (hour and minute).
-
->>> secsToClock (120 :: Int)
-(0, 2)
--}
-secsToClock :: (Integral a) => a -> (a, a)
-secsToClock seconds
-    = let (minutes, _)         = seconds `divMod` 60
-          (hours, restMinutes) = minutes `divMod` 60
-      in  (hours, restMinutes)
-
-{-|
-Helper to convert a week day number into a literal representation.
-
->>> weekDayToLit 1
-"Mon"
--}
-weekDayToLit :: Int -> Text
-weekDayToLit 1 = "Mon"
-weekDayToLit 2 = "Tue"
-weekDayToLit 3 = "Wed"
-weekDayToLit 4 = "Thu"
-weekDayToLit 5 = "Fri"
-weekDayToLit 6 = "Sat"
-weekDayToLit _ = "Sun"

@@ -9,10 +9,7 @@ import qualified Data.OrgMode.Parse.Attoparsec.Document as OrgParse
 import           Data.Attoparsec.Text (parseOnly)
 import           Data.OrgMode.Parse.Types
 import           Data.Text (strip, append)
-import           Data.Time.Clock (UTCTime(..))
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Time.Calendar as T
-import qualified Data.Time.Clock as T
 
 import           Database.OrgMode.Internal.Import
 import qualified Database.OrgMode.Query.Clock as DbClock
@@ -23,6 +20,7 @@ import qualified Database.OrgMode.Query.Property as DbProperty
 import qualified Database.OrgMode.Query.Tag as DbTag
 import qualified Database.OrgMode.Query.TagRel as DbTagRel
 import qualified Database.OrgMode.Types as Db
+import qualified Database.OrgMode.Util.Time as TimeUtil
 
 -------------------------------------------------------------------------------
 -- * Plain text
@@ -138,12 +136,11 @@ importClock :: (MonadIO m)
             -> ReaderT SqlBackend m (Maybe (Key Db.Clock)) -- ^ Given ID
 importClock _         (Nothing, _)     = return Nothing
 importClock headingId (Just tstamp, _)
-    = DbClock.add headingId tsActive start endM dur >>= return . Just
+    = DbClock.add headingId tsActive start endM >>= return . Just
   where
     Timestamp{..} = tstamp
-    start = dateTimeToUTC tsTime
-    endM  = dateTimeToUTC <$> tsEndTime
-    dur   = utcToDur start endM
+    start = TimeUtil.dateTimeToUTC tsTime
+    endM  = TimeUtil.dateTimeToUTC <$> tsEndTime
 
 {-|
 Imports given planning into the database and returns the ID it was given.
@@ -160,7 +157,7 @@ importPlanning hedId (kword, tstamp)
     = DbPlanning.add hedId kword start
   where
     Timestamp{..} = tstamp
-    start = dateTimeToUTC tsTime
+    start = TimeUtil.dateTimeToUTC tsTime
 
 {-|
 Imports given property into the database and returns the ID it was given.
@@ -174,43 +171,3 @@ importProperty :: (MonadIO m)
                -> (Text, Text)                           -- ^ Property to insert
                -> ReaderT SqlBackend m (Key Db.Property) -- ^ Given ID
 importProperty headingId (key, val) = DbProperty.add headingId key val
-
--------------------------------------------------------------------------------
--- ** Conversion
-
-{-|
-Helper for converting a orgmode-parse 'DateTime' into a 'UTCTime'. 'UTCTime' is
-used for convenience when calculating the duration of two 'DateTime's.
--}
-dateTimeToUTC :: DateTime
-              -> UTCTime
-dateTimeToUTC (DateTime cal _ clock _ _)
-    = UTCTime (T.fromGregorian (toInteger year) month day)
-              (T.secondsToDiffTime midSecs)
-  where
-    (YMD' (YearMonthDay year month day)) = cal
-    calcSecs Nothing       = 0
-    calcSecs (Just (h, m)) = ((h * 60) + m) * 60
-    midSecs                = toInteger $ calcSecs clock
-
-{-|
-Helper for calculating the duration between two 'UTCTime'. Since 'Timestamp's can
-can have the end time missing, this function accepts 'Maybe UTCTime'. When the
-end time is missing a duration of 0 is returned.
-
-NB: duration is returned as seconds.
-
-20 seconds between start and end:
-
->>> utcToDur start (Just end)
-20
-
-No end time given:
-
->>> utcToDur start Nothing
-0
--}
-utcToDur :: UTCTime -> Maybe UTCTime -> Int
-utcToDur start endM = case endM of
-    Nothing  -> 0
-    Just end -> round $ T.diffUTCTime end start
